@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 
-public class Incidencias {
+public class Incidencia {
     @Positive
     private int id;
 
@@ -32,7 +32,7 @@ public class Incidencias {
     private String dpto; // Departamento asignado
 
 
-    public Incidencias(int id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
+    public Incidencia(int id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
                       Float latitud, Float longitud, String estado, String dpto) {
         this.id = id;
         this.fecha = fecha;
