@@ -31,9 +31,11 @@ public class Incidencia {
 
     private String dpto; // Departamento asignado
 
+    private String loginUsuario; //< Email del usuario que ha registrado la Incidencia
+
 
     public Incidencia(int id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
-                      Float latitud, Float longitud, String estado, String dpto) {
+                      Float latitud, Float longitud, String estado, String dpto,  String loginUsuario) {
         this.id = id;
         this.fecha = fecha;
         this.tipo = tipo;
@@ -43,6 +45,7 @@ public class Incidencia {
         this.longitud = longitud;
         this.estado = estado;
         this.dpto = dpto;
+        this.loginUsuario = loginUsuario;
     }
 
 
@@ -101,5 +104,13 @@ public class Incidencia {
 
     public void dpto(String dpto) {
         this.dpto = dpto;
+    }
+
+    public String loginUsuario() {
+        return loginUsuario;
+    }
+
+    public void loginUsuario(String loginUsuario) {
+        this.loginUsuario = loginUsuario;
     }
 }

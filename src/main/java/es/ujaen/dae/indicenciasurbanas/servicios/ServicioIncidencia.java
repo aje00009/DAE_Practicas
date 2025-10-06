@@ -2,9 +2,11 @@ package es.ujaen.dae.indicenciasurbanas.servicios;
 
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -20,6 +22,10 @@ public class ServicioIncidencia {
         this.tipoIncidencia=new ArrayList<>(tipoIncidencia);
         usuarioMap=new HashMap<>();
         incidenciaMap=new HashMap<>();
+    }
+
+    public void nuevaIncidencia(@Valid Incidencia incidencia) {
+        incidenciaMap.put(incidencia.id(), incidencia);
     }
 
     /**
