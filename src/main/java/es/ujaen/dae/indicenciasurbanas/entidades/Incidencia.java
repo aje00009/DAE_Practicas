@@ -1,10 +1,12 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Incidencia {
     @Positive
@@ -34,7 +36,7 @@ public class Incidencia {
     @NotBlank
     private String dpto;// Departamento asignado
 
-    @NotBlank
+    @Email
     private String emailUsuario; //< Email del usuario que ha registrado la Incidencia
 
 
@@ -114,7 +116,28 @@ public class Incidencia {
         return emailUsuario;
     }
 
-    public void emailUsuario(String emailUsuario) {
-        this.emailUsuario = emailUsuario;
+    public void emailUsuario(String emailUsuario) {this.emailUsuario = emailUsuario; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Incidencia u = (Incidencia) o;
+
+        // Dos Incidencias son iguales si todos sus atributos excepto el id son iguales
+        return Objects.equals(fecha, u.fecha) &&
+                Objects.equals(tipo, u.tipo) &&
+                Objects.equals(descripcion, u.descripcion) &&
+                Objects.equals(localizacion, u.localizacion) &&
+                Objects.equals(latitud, u.latitud) &&
+                Objects.equals(longitud, u.longitud) &&
+                Objects.equals(dpto, u.dpto) &&
+                Objects.equals(emailUsuario, u.emailUsuario);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tipo, localizacion, descripcion, emailUsuario);
+    }
+
 }

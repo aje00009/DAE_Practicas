@@ -3,9 +3,12 @@ package es.ujaen.dae.indicenciasurbanas.servicios;
 import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import es.ujaen.dae.indicenciasurbanas.excepciones.IncidenciaYaRegistrada;
 import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioYaRegistrado;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,6 +22,7 @@ public class ServicioIncidencia {
     private List<String> tipoIncidencia;
     private Map<String, Usuario> usuarioMap;
     private Map<Integer, Incidencia> incidenciaMap;
+    private static int nIncidencia= 1;
 
     private static final Usuario admin = new Usuario("administrador","administrador",
             LocalDate.of(1995,1,1),"-",661030462,"admin.dae@ujaen.es","admin");
@@ -34,11 +38,28 @@ public class ServicioIncidencia {
     }
 
     /**
-     * Creación de nuevas incidencias en el sistema
-     * @param incidencia El objeto incidencia que debe ser válido para quedar registrado en el sistema
+     *Registro de una nueva Incidencia en el sistema
+     * @param fecha fecha de la Incidencia que va a ser registrada
+     * @param tipo tipo de la Incidencia que va se va a registrar
+     * @param descripcion descripción de la Incidencia que se va a registrar
+     * @param localizacion localización de la Incidencia que va a ser registrada
+     * @param latitud coordenadas x del la localización de la incidencia que se va a registrar
+     * @param longitud coordenadas y del la localización de la incidencia que se va a registrar
+     * @param dpto nombre del departamento que se va a asignar a la incidencia
+     * @param emailUsuario email del usuario que ha notificado de la incidencia que se va a registrar
      */
-    public void nuevaIncidencia(@Valid Incidencia incidencia) {
-        incidenciaMap.put(incidencia.id(), incidencia);
+    public void nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
+                                @NotBlank Float latitud,@NotBlank Float longitud, @NotBlank String dpto, @Email String emailUsuario) {
+
+        Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, tipo, descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
+
+        boolean existe = incidenciaMap.values().stream().anyMatch(existente -> existente.equals(nuevaIncidencia));
+
+        if (existe) {
+            throw new IncidenciaYaRegistrada();
+        }
+
+        incidenciaMap.put(nuevaIncidencia.id(), nuevaIncidencia);
     }
 
     /**
