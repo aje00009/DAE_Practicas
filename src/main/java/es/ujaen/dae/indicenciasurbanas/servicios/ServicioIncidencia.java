@@ -71,57 +71,34 @@ public class ServicioIncidencia {
     }
 
     /**
-     * Método para obtener una lista de incidencias generadas por un usuario concreto
-     * @param login identificador de usuario
+     * Obtener una lista de incidencias generadas por un usuario concreto
+     * @param email Identificador único del usuario
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
-    public List<Incidencia> obtenerListaIncidenciasUsuario(String login){
-        return null;
-        /*
-        TODO - Asociar incidencia con un usuario
-         */
+    public List<Incidencia> obtenerListaIncidenciasUsuario(String email){
+        return incidenciaMap.values().stream().filter(i -> i.loginUsuario().equals(email)).toList();
     }
 
     /**
-     * Método para obtener las incidencias con un tipo de incidencia y/o estado de incidencia concreto
+     * Obtener las incidencias con un tipo de incidencia y/o estado de incidencia concreto
      * @param tipoIncidencia valor del tipo de incidencia deseado, puede ser nulo
      * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
      * @return Devuelve una lista con las incidencias que tienen los valores deseados
      */
-    public List<Incidencia> buscarIncidencias(String tipoIncidencia, EstadoIncidencia estadoIncidencia){
-        List<Incidencia> listaResultado=new ArrayList<>();
-        List<Incidencia> listaBusqueda=new ArrayList<>(incidenciaMap.values());
+    public List<Incidencia> buscarIncidenciasTipoEstado(String tipoIncidencia, EstadoIncidencia estadoIncidencia){
 
-        boolean tipo=true, estado=true;
+        return incidenciaMap.values().stream()
+                .filter(incidencia -> {
 
-        if(tipoIncidencia.isEmpty()){
-            tipo=false;
-        }
-        if(estadoIncidencia==null){
-            estado=false;
-        }
+                    //Comprobación del tipo
+                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().equalsIgnoreCase(tipoIncidencia));
 
-        for(int i=0; i<listaBusqueda.size(); i++){
-            if(tipo && estado){
-                if(listaBusqueda.get(i).tipo().equals(tipoIncidencia) && listaBusqueda.get(i).estado().equals(estadoIncidencia)){
-                    listaResultado.add(listaBusqueda.get(i));
-                }
-            }
-            else{
-                if(tipo){
-                    if(listaBusqueda.get(i).tipo().equals(tipoIncidencia)){
-                        listaResultado.add(listaBusqueda.get(i));
-                    }
-                }
-                if(estado){
-                    if(listaBusqueda.get(i).estado().equals(estadoIncidencia)){
-                        listaResultado.add(listaBusqueda.get(i));
-                    }
-                }
-            }
-        }
+                    //Comprobación del estado
+                    boolean estadoCoincide = (estadoIncidencia == null || incidencia.estado() == estadoIncidencia);
 
-        return listaResultado;
+                    return tipoCoincide && estadoCoincide;
+                })
+                .toList();
     }
 
     /**
