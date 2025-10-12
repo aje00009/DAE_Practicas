@@ -17,3 +17,6 @@
 - Modificación del método ``buscarIncidenciasTipoEstado`` en `ServicioIncidencias` para simplificar su lógica (Alberto Jiménez Expósito)
 - Añadido método ``borrarIncidencia`` a `ServicioIncidencias` para borrar una incidencia por id (Alberto Jiménez Expósito)
 - Añadido método ``modificarEstadoIncidencia`` a `ServicioIncidencias` para modificar el estado de una incidencia (Alberto Jiménez Expósito)
+- Modificación del método `nuevaIncidencia` de la clase ``ServicioIncidencia`` para implementar al completo la funcionalidad de incluir una nueva funcionalidad (Carlos Mayor Navarro)
+- Creación de los métodos `equals` y `hashCode` de la clase de la clase ``Incidencia`` para comparar dos incidencias por todos los atributos excepto del id (Carlos Mayor Navarro)
+- Creación de la clase ``IncidenciaYaRegistrada`` para lanzar una excepcion cuando ya exista una ``Incidencia`` ya registrada (Carlos Mayor Navarro)
