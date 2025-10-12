@@ -20,3 +20,6 @@
 - Modificación del método `nuevaIncidencia` de la clase ``ServicioIncidencia`` para implementar al completo la funcionalidad de incluir una nueva funcionalidad (Carlos Mayor Navarro)
 - Creación de los métodos `equals` y `hashCode` de la clase de la clase ``Incidencia`` para comparar dos incidencias por todos los atributos excepto del id (Carlos Mayor Navarro)
 - Creación de la clase ``IncidenciaYaRegistrada`` para lanzar una excepcion cuando ya exista una ``Incidencia`` ya registrada (Carlos Mayor Navarro)
+- Modificación de los métodos ``crearTipoIncidencia`` y ``borrarTipoIncidencia`` para permitir crear y borrar un tipo de Incidencia (Carlos Mayor Navarro)
+- Creación de las clases ``TipoIncidenciaEnUso``,``TipoIncidenciaExiste``, ``TipoIncidenciaNoExiste`` para lanzar una excepción en cada caso cuando sea necesario (Carlos Mayor Navarro)
+- Modificación del método ``clave`` de la clase ``Usuario`` para permitir que solo el administrador pueda modificar su propia clave (Carlos Mayor Navarro)

@@ -1,5 +1,6 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import es.ujaen.dae.indicenciasurbanas.excepciones.AccionNoAutorizada;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -88,7 +89,10 @@ public class Usuario {
         return this.email;
     }
 
-    public void  clave(String clave){
+    public void clave(String clave){
+        if(!this.email.equals("admin")) {
+            throw new AccionNoAutorizada();
+        }
         this.clave = clave;
     }
 

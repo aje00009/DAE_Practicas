@@ -3,10 +3,7 @@ package es.ujaen.dae.indicenciasurbanas.servicios;
 import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
-import es.ujaen.dae.indicenciasurbanas.excepciones.AccionNoAutorizada;
-import es.ujaen.dae.indicenciasurbanas.excepciones.IncidenciaNoExiste;
-import es.ujaen.dae.indicenciasurbanas.excepciones.IncidenciaYaRegistrada;
-import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioYaRegistrado;
+import es.ujaen.dae.indicenciasurbanas.excepciones.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -177,21 +174,35 @@ public class ServicioIncidencia {
      * @param tipoIncidencia Tipo de incidencia a añadir
      */
     public void crearTipoIncidencia(String email, String tipoIncidencia){
-        if(login.equals("admin")){
-            this.tipoIncidencia.add(tipoIncidencia);
+        if(!email.equals("admin")){
+            throw new AccionNoAutorizada();
         }
+
+        if(this.tipoIncidencia.contains(tipoIncidencia)){
+            throw new TipoIncidenciaExiste();
+        }
+
+        this.tipoIncidencia.add(tipoIncidencia);
     }
 
     /**
-     * Método para borrar un tipo de incidencia
-     * @param login identificador del usuario, reservado para admin
-     * @param tipoIncidencia valor del tipo de incidencia borrado
+     * Borrar un tipo de Incidencia
+     * @param email Identificador del usuario
+     * @param tipoIncidencia tipo de Incidencia a borrar
      */
-    public void borrarTipoIncidencia(String login, String tipoIncidencia){
-        if(login.equals("admin")){
-            if (buscarIncidencias(tipoIncidencia, null).isEmpty()) {
-                this.tipoIncidencia.remove(tipoIncidencia);
-            }
+    public void borrarTipoIncidencia(String email, String tipoIncidencia){
+        if(!email.equals("admin")) {
+            throw new AccionNoAutorizada();
         }
+        if(!this.tipoIncidencia.contains(tipoIncidencia)) {
+            throw new TipoIncidenciaNoExiste();
+        }
+
+        if (!buscarIncidenciasTipoEstado(tipoIncidencia, null).isEmpty()) {
+            throw new TipoIncidenciaEnUso();
+        }
+
+        this.tipoIncidencia.remove(tipoIncidencia);
+
     }
 }
