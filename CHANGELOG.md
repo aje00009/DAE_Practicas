@@ -16,3 +16,4 @@
 - Modificaciones en la declaración del atributo``estado`` dentro de `Incidencia` y métodos getter y setter, además del resto métodos relacionados con la misma en ``ServicioIncidencia`` (Carlos Mayor Navarro)
 - Modificación del método ``buscarIncidenciasTipoEstado`` en `ServicioIncidencias` para simplificar su lógica (Alberto Jiménez Expósito)
 - Añadido método ``borrarIncidencia`` a `ServicioIncidencias` para borrar una incidencia por id (Alberto Jiménez Expósito)
+- Añadido método ``modificarEstadoIncidencia`` a `ServicioIncidencias` para modificar el estado de una incidencia (Alberto Jiménez Expósito)

@@ -3,6 +3,7 @@ package es.ujaen.dae.indicenciasurbanas.servicios;
 import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import es.ujaen.dae.indicenciasurbanas.excepciones.AccionNoAutorizada;
 import es.ujaen.dae.indicenciasurbanas.excepciones.IncidenciaNoExiste;
 import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioYaRegistrado;
 import jakarta.validation.Valid;
@@ -130,23 +131,31 @@ public class ServicioIncidencia {
     }
 
     /**
-     * Método para modificar el estado de una incidencia
-     * @param login identificador del usuario, reservado para admin
-     * @param estadoIncidencia valor del nuevo estado de la incidencia
-     * @param idIncidencia identificador de la incidencia que se va a modificar
+     * Modificación del estado de una incidencia
+     * @param email Identificador del usuario
+     * @param estadoIncidencia Nuevo estado de la incidencia
+     * @param idIncidencia Identificador de la incidencia a modificar
      */
-    public void modificarEstadoIncidencia(String login, EstadoIncidencia estadoIncidencia, int idIncidencia){
-        if(login.equals("admin")){
-            incidenciaMap.get(idIncidencia).estado(estadoIncidencia);
+    public void modificarEstadoIncidencia(String email, EstadoIncidencia estadoIncidencia, int idIncidencia){
+        Incidencia incidencia = incidenciaMap.get(idIncidencia);
+
+        if(incidencia == null) {
+            throw new IncidenciaNoExiste();
         }
+
+        if(!email.equals("admin")) {
+            throw new AccionNoAutorizada();
+        }
+
+        incidencia.estado(estadoIncidencia);
     }
 
     /**
-     * Método para crear un nuevo tipo de incidencia
-     * @param login identificador del usuario, reservado para admin
-     * @param tipoIncidencia valor del nuevo tipo de incidencia creado
+     * Crear un nuevo tipo de incidencia
+     * @param email Identificador del usuario
+     * @param tipoIncidencia Tipo de incidencia a añadir
      */
-    public void crearTipoIncidencia(String login, String tipoIncidencia){
+    public void crearTipoIncidencia(String email, String tipoIncidencia){
         if(login.equals("admin")){
             this.tipoIncidencia.add(tipoIncidencia);
         }
@@ -163,14 +172,5 @@ public class ServicioIncidencia {
                 this.tipoIncidencia.remove(tipoIncidencia);
             }
         }
-    }
-
-    /**
-     * Método para obtener la lista de los tipos de incidencias posibles
-     * @return Devuelve una lista con los valores de los tipos de incidencias
-     */
-    public List<String> obtenerTipoIncidencia(){
-        List<String> listaTipo=new ArrayList<>(tipoIncidencia);
-        return listaTipo;
     }
 }
