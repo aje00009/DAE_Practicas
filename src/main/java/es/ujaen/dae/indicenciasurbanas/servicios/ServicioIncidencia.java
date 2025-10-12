@@ -1,5 +1,6 @@
 package es.ujaen.dae.indicenciasurbanas.servicios;
 
+import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
 import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioYaRegistrado;
@@ -87,7 +88,7 @@ public class ServicioIncidencia {
      * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
      * @return Devuelve una lista con las incidencias que tienen los valores deseados
      */
-    public List<Incidencia> buscarIncidencias(String tipoIncidencia, String estadoIncidencia){
+    public List<Incidencia> buscarIncidencias(String tipoIncidencia, EstadoIncidencia estadoIncidencia){
         List<Incidencia> listaResultado=new ArrayList<>();
         List<Incidencia> listaBusqueda=new ArrayList<>(incidenciaMap.values());
 
@@ -96,7 +97,7 @@ public class ServicioIncidencia {
         if(tipoIncidencia.isEmpty()){
             tipo=false;
         }
-        if(estadoIncidencia.isEmpty()){
+        if(estadoIncidencia==null){
             estado=false;
         }
 
@@ -140,7 +141,7 @@ public class ServicioIncidencia {
      * @param estadoIncidencia valor del nuevo estado de la incidencia
      * @param idIncidencia identificador de la incidencia que se va a modificar
      */
-    public void modificarEstadoIncidencia(String login, String estadoIncidencia, int idIncidencia){
+    public void modificarEstadoIncidencia(String login, EstadoIncidencia estadoIncidencia, int idIncidencia){
         if(login.equals("admin")){
             incidenciaMap.get(idIncidencia).estado(estadoIncidencia);
         }
@@ -164,7 +165,7 @@ public class ServicioIncidencia {
      */
     public void borrarTipoIncidencia(String login, String tipoIncidencia){
         if(login.equals("admin")){
-            if (buscarIncidencias(tipoIncidencia, "").isEmpty()) {
+            if (buscarIncidencias(tipoIncidencia, null).isEmpty()) {
                 this.tipoIncidencia.remove(tipoIncidencia);
             }
         }

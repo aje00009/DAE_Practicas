@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 public class Incidencia {
     @Positive
-    private int id;
+    private Integer id;
 
     @NotNull
     private LocalDateTime fecha;
@@ -23,19 +23,23 @@ public class Incidencia {
     private String localizacion;
 
     // Coordenadas GPS
+    @NotBlank
     private Float latitud;
+    @NotBlank
     private Float longitud;
 
+    @NotNull
+    private EstadoIncidencia estado;
+
     @NotBlank
-    private String estado;
+    private String dpto;// Departamento asignado
 
-    private String dpto; // Departamento asignado
+    @NotBlank
+    private String emailUsuario; //< Email del usuario que ha registrado la Incidencia
 
-    private String loginUsuario; //< Email del usuario que ha registrado la Incidencia
 
-
-    public Incidencia(int id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
-                      Float latitud, Float longitud, String estado, String dpto,  String loginUsuario) {
+    public Incidencia(Integer id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
+                      Float latitud, Float longitud,  String dpto,  String emailUsuario) {
         this.id = id;
         this.fecha = fecha;
         this.tipo = tipo;
@@ -43,13 +47,13 @@ public class Incidencia {
         this.localizacion = localizacion;
         this.latitud = latitud;
         this.longitud = longitud;
-        this.estado = estado;
+        this.estado =EstadoIncidencia.PENDIENTE; // Asignamos por defecto el estado PENDIENTE al ser el primer estado por el que debe pasar una Incidencia
         this.dpto = dpto;
-        this.loginUsuario = loginUsuario;
+        this.emailUsuario = emailUsuario;
     }
 
 
-    public int id() {
+    public Integer id() {
         return id;
     }
 
@@ -90,11 +94,11 @@ public class Incidencia {
         this.localizacion = localizacion;
     }
 
-    public String estado() {
+    public EstadoIncidencia estado() {
         return estado;
     }
 
-    public void estado(String estado) {
+    public void estado(EstadoIncidencia estado) {
         this.estado = estado;
     }
 
@@ -106,11 +110,11 @@ public class Incidencia {
         this.dpto = dpto;
     }
 
-    public String loginUsuario() {
-        return loginUsuario;
+    public String emailUsuario() {
+        return emailUsuario;
     }
 
-    public void loginUsuario(String loginUsuario) {
-        this.loginUsuario = loginUsuario;
+    public void emailUsuario(String emailUsuario) {
+        this.emailUsuario = emailUsuario;
     }
 }
