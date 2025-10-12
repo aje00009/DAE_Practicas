@@ -7,3 +7,7 @@
 - Creación de la entidad ``Incidencia`` (Carlos Mayor Navarro)
 - Añadido atributo `loginUsuario` a ``Incidencia`` para indicar el `Usuario` que la registró (Alberto Jiménez Expósito)
 - Añadido método ``nuevaIncidencia`` que registra una nueva incidencia en el sistema (Alberto Jiménez Expósito)
+- Añadida clase excepción ``UsuarioYaRegistrado`` para lanzar una excepción cuando un usuario ya exista en el sistema (Alberto Jiménez Expósito)
+- Añadido método `nuevoUsuario` a ``ServicioIncidencia`` para registrar un nuevo `Usuario` en el sistema (Alberto Jiménez Expósito)
+- Añadido método ``login`` a `ServicioIncidencia` para hacer login de un usuario ya registrado en el sistema (Alberto Jiménez Expósito)
+- Inicialización de ``tiposIncidencia`` en `ServicioIncidencia` para añadir los tipos de incidencia por defecto en el sistema (Alberto Jiménez Expósito)

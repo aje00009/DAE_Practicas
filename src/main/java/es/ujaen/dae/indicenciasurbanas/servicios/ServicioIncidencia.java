@@ -2,10 +2,13 @@ package es.ujaen.dae.indicenciasurbanas.servicios;
 
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioYaRegistrado;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -16,16 +19,54 @@ public class ServicioIncidencia {
     private Map<String, Usuario> usuarioMap;
     private Map<Integer, Incidencia> incidenciaMap;
 
-    public ServicioIncidencia() {}
+    private static final Usuario admin = new Usuario("administrador","administrador",
+            LocalDate.of(1995,1,1),"-",661030462,"admin.dae@ujaen.es","admin");
 
-    public ServicioIncidencia(List<String> tipoIncidencia) {
-        this.tipoIncidencia=new ArrayList<>(tipoIncidencia);
-        usuarioMap=new HashMap<>();
-        incidenciaMap=new HashMap<>();
+    public ServicioIncidencia() {
+        this.usuarioMap = new HashMap<>();
+        this.incidenciaMap = new HashMap<>();
+        tipoIncidencia = new ArrayList<>();
+
+        tipoIncidencia.add("Suciedad");
+        tipoIncidencia.add("Rotura en parque");
+        tipoIncidencia.add("Rotura en mobiliario urbano");
     }
 
+    /**
+     * Creación de nuevas incidencias en el sistema
+     * @param incidencia El objeto incidencia que debe ser válido para quedar registrado en el sistema
+     */
     public void nuevaIncidencia(@Valid Incidencia incidencia) {
         incidenciaMap.put(incidencia.id(), incidencia);
+    }
+
+    /**
+     * Registro de un nuevo usuario en el sistema
+     * @param usuario El objeto usuario a ser añadido al sistema
+     * @throws UsuarioYaRegistrado En caso de que el Usuario a registrar ya esté en el sistema o se intente crear con el mismo email que el admin
+     */
+    public void nuevoUsuario(@Valid Usuario usuario) {
+        if(usuario.email().equals(admin.email()))
+            throw new UsuarioYaRegistrado();
+
+        Usuario u = usuarioMap.putIfAbsent(usuario.email(),usuario);
+        if( u==null ) {
+            throw new UsuarioYaRegistrado();
+        }
+    }
+
+    /**
+     * Login para identificarse como usuario en el sistema
+     * @param email Email de usuario para hacer login
+     * @param clave Contraseña asociada al usuario para hacer login
+     * @return Un objeto Optional encapsulando a un objeto Usuario o vacío si no se ha encontrado al usuario
+     */
+    public Optional<Usuario> login(@Email String email, String clave){
+        if(email.equals(admin.email()) &&  clave.equals(admin.clave()))
+            return Optional.of(admin);
+
+        Usuario u = usuarioMap.get(email);
+        return (u != null && u.clave().equals(clave)) ? Optional.of(u) : Optional.empty();
     }
 
     /**
