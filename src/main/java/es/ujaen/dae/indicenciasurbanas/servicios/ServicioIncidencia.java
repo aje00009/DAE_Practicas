@@ -3,6 +3,7 @@ package es.ujaen.dae.indicenciasurbanas.servicios;
 import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import es.ujaen.dae.indicenciasurbanas.excepciones.IncidenciaNoExiste;
 import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioYaRegistrado;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -76,7 +77,7 @@ public class ServicioIncidencia {
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
     public List<Incidencia> obtenerListaIncidenciasUsuario(String email){
-        return incidenciaMap.values().stream().filter(i -> i.loginUsuario().equals(email)).toList();
+        return incidenciaMap.values().stream().filter(i -> i.emailUsuario().equals(email)).toList();
     }
 
     /**
@@ -102,14 +103,30 @@ public class ServicioIncidencia {
     }
 
     /**
-     * Método para que un administrador pueda borrar una incidencia
-     * @param login identificador del usuario, debe ser admin
+     * Eliminación de una incidencia registrada en el sistema
+     * @param email Identificador del usuario logeado
      * @param idIncidencia identificador de la incidencia que se elimina
      */
-    public void borrarIncidencia(String login, int idIncidencia){
-        if(login.equals("admin")){
-            incidenciaMap.remove(idIncidencia);
+    public boolean borrarIncidencia(String email, int idIncidencia){
+        // Primero buscamos si existe la incidencia (si no, lanzamos excepción)
+        Incidencia incidencia = incidenciaMap.get(idIncidencia);
+        if(incidencia == null) {
+            throw new IncidenciaNoExiste();
         }
+
+        // Condiciones para borrar
+        boolean esAdmin = "admin".equalsIgnoreCase(email);
+        boolean esPropietario = incidencia.emailUsuario().equals(email);
+        boolean estaPendiente = incidencia.estado() == EstadoIncidencia.PENDIENTE;
+
+        // Se borra si cumple condiciones
+        if (esAdmin || (esPropietario && estaPendiente)) {
+            incidenciaMap.remove(idIncidencia);
+            return true;
+        }
+
+        // Si no se borró, se comunica al usuario
+        return false;
     }
 
     /**

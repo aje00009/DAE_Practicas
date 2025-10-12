@@ -15,3 +15,4 @@
 - Añadida clase ``EstadoIncidencia`` que sirve para indicar los estados posibles de una `Incidencia` (Carlos Mayor Navarro)
 - Modificaciones en la declaración del atributo``estado`` dentro de `Incidencia` y métodos getter y setter, además del resto métodos relacionados con la misma en ``ServicioIncidencia`` (Carlos Mayor Navarro)
 - Modificación del método ``buscarIncidenciasTipoEstado`` en `ServicioIncidencias` para simplificar su lógica (Alberto Jiménez Expósito)
+- Añadido método ``borrarIncidencia`` a `ServicioIncidencias` para borrar una incidencia por id (Alberto Jiménez Expósito)
