@@ -1,15 +1,16 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Incidencia {
     @Positive
-    private int id;
+    private Integer id;
 
     @NotNull
     private LocalDateTime fecha;
@@ -24,20 +25,23 @@ public class Incidencia {
     private String localizacion;
 
     // Coordenadas GPS
-    private float latitud;
-    private float longitud;
+    @NotBlank
+    private Float latitud;
+    @NotBlank
+    private Float longitud;
+
+    @NotNull
+    private EstadoIncidencia estado;
 
     @NotBlank
-    @Pattern(regexp = "^(resuelta|en evaluación|pendiente)$")
-    private String estado;
+    private String dpto;// Departamento asignado
 
-    private String dpto; // Departamento asignado
-
-    private String loginUsuario; //< Email del usuario que ha registrado la Incidencia
+    @Email
+    private String emailUsuario; //< Email del usuario que ha registrado la Incidencia
 
 
-    public Incidencia(int id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
-                      Float latitud, Float longitud, String estado, String dpto,  String loginUsuario) {
+    public Incidencia(Integer id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
+                      Float latitud, Float longitud,  String dpto,  String emailUsuario) {
         this.id = id;
         this.fecha = fecha;
         this.tipo = tipo;
@@ -45,13 +49,13 @@ public class Incidencia {
         this.localizacion = localizacion;
         this.latitud = latitud;
         this.longitud = longitud;
-        this.estado = estado;
+        this.estado =EstadoIncidencia.PENDIENTE; // Asignamos por defecto el estado PENDIENTE al ser el primer estado por el que debe pasar una Incidencia
         this.dpto = dpto;
-        this.loginUsuario = loginUsuario;
+        this.emailUsuario = emailUsuario;
     }
 
 
-    public int id() {
+    public Integer id() {
         return id;
     }
 
@@ -92,11 +96,11 @@ public class Incidencia {
         this.localizacion = localizacion;
     }
 
-    public String estado() {
+    public EstadoIncidencia estado() {
         return estado;
     }
 
-    public void estado(String estado) {
+    public void estado(EstadoIncidencia estado) {
         this.estado = estado;
     }
 
@@ -108,11 +112,32 @@ public class Incidencia {
         this.dpto = dpto;
     }
 
-    public String loginUsuario() {
-        return loginUsuario;
+    public String emailUsuario() {
+        return emailUsuario;
     }
 
-    public void loginUsuario(String loginUsuario) {
-        this.loginUsuario = loginUsuario;
+    public void emailUsuario(String emailUsuario) {this.emailUsuario = emailUsuario; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Incidencia u = (Incidencia) o;
+
+        // Dos Incidencias son iguales si todos sus atributos excepto el id son iguales
+        return Objects.equals(fecha, u.fecha) &&
+                Objects.equals(tipo, u.tipo) &&
+                Objects.equals(descripcion, u.descripcion) &&
+                Objects.equals(localizacion, u.localizacion) &&
+                Objects.equals(latitud, u.latitud) &&
+                Objects.equals(longitud, u.longitud) &&
+                Objects.equals(dpto, u.dpto) &&
+                Objects.equals(emailUsuario, u.emailUsuario);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tipo, localizacion, descripcion, emailUsuario);
+    }
+
 }
