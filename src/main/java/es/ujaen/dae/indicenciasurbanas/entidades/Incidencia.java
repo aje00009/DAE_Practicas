@@ -2,6 +2,7 @@ package es.ujaen.dae.indicenciasurbanas.entidades;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
@@ -23,10 +24,11 @@ public class Incidencia {
     private String localizacion;
 
     // Coordenadas GPS
-    private Float latitud;
-    private Float longitud;
+    private float latitud;
+    private float longitud;
 
     @NotBlank
+    @Pattern(regexp = "^(resuelta|en evaluación|pendiente)$")
     private String estado;
 
     private String dpto; // Departamento asignado

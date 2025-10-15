@@ -1,4 +1,4 @@
-package es.ujaen.dae_practica;
+package es.ujaen.dae.incidenciasurbanas.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

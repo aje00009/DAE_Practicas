@@ -25,7 +25,9 @@ public class ServicioIncidencia {
     }
 
     public void nuevaIncidencia(@Valid Incidencia incidencia) {
-        incidenciaMap.put(incidencia.id(), incidencia);
+        if(!incidenciaMap.containsKey(incidencia.id())){
+            incidenciaMap.put(incidencia.id(), incidencia);
+        }
     }
 
     /**
@@ -34,10 +36,14 @@ public class ServicioIncidencia {
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
     public List<Incidencia> obtenerListaIncidenciasUsuario(String login){
-        return null;
-        /*
-        TODO - Asociar incidencia con un usuario
-         */
+        List<Incidencia> listaIncidencia=new ArrayList<>(incidenciaMap.values());
+        List<Incidencia> incidenciasUsuario=new ArrayList<>();
+        for (Incidencia incidencia : listaIncidencia) {
+            if (incidencia.loginUsuario().equals(login)) {
+                incidenciasUsuario.add(incidencia);
+            }
+        }
+        return incidenciasUsuario;
     }
 
     /**
@@ -59,21 +65,20 @@ public class ServicioIncidencia {
             estado=false;
         }
 
-        for(int i=0; i<listaBusqueda.size(); i++){
-            if(tipo && estado){
-                if(listaBusqueda.get(i).tipo().equals(tipoIncidencia) && listaBusqueda.get(i).estado().equals(estadoIncidencia)){
-                    listaResultado.add(listaBusqueda.get(i));
+        for (Incidencia incidencia : listaBusqueda) {
+            if (tipo && estado) {
+                if (incidencia.tipo().equals(tipoIncidencia) && incidencia.estado().equals(estadoIncidencia)) {
+                    listaResultado.add(incidencia);
                 }
-            }
-            else{
-                if(tipo){
-                    if(listaBusqueda.get(i).tipo().equals(tipoIncidencia)){
-                        listaResultado.add(listaBusqueda.get(i));
+            } else {
+                if (tipo) {
+                    if (incidencia.tipo().equals(tipoIncidencia)) {
+                        listaResultado.add(incidencia);
                     }
                 }
-                if(estado){
-                    if(listaBusqueda.get(i).estado().equals(estadoIncidencia)){
-                        listaResultado.add(listaBusqueda.get(i));
+                if (estado) {
+                    if (incidencia.estado().equals(estadoIncidencia)) {
+                        listaResultado.add(incidencia);
                     }
                 }
             }
@@ -88,7 +93,7 @@ public class ServicioIncidencia {
      * @param idIncidencia identificador de la incidencia que se elimina
      */
     public void borrarIncidencia(String login, int idIncidencia){
-        if(login.equals("admin")){
+        if(login.equals("admin") || (incidenciaMap.get(idIncidencia).estado().equals("resuelta") && incidenciaMap.get(idIncidencia).loginUsuario().equals(login))){
             incidenciaMap.remove(idIncidencia);
         }
     }
