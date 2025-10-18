@@ -1,5 +1,6 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +12,7 @@ import java.util.Objects;
 
 public class Incidencia {
     @Positive
-    private Integer id;
+    private int id;
 
     @NotNull
     private LocalDateTime fecha;
@@ -25,11 +26,8 @@ public class Incidencia {
     @NotBlank
     private String localizacion;
 
-    // Coordenadas GPS
-    @NotBlank
-    private Float latitud;
-    @NotBlank
-    private Float longitud;
+    @NotNull
+    private CoordenadasGps coordenadas;
 
     @NotNull
     private EstadoIncidencia estado;
@@ -42,15 +40,14 @@ public class Incidencia {
 
 
     public Incidencia(Integer id, LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
-                      Float latitud, Float longitud,  String dpto,  String emailUsuario) {
+                      float latitud, float longitud,  String dpto,  String emailUsuario) {
         this.id = id;
         this.fecha = fecha;
         this.tipo = tipo;
         this.descripcion = descripcion;
         this.localizacion = localizacion;
-        this.latitud = latitud;
-        this.longitud = longitud;
-        this.estado =EstadoIncidencia.PENDIENTE; // Asignamos por defecto el estado PENDIENTE al ser el primer estado por el que debe pasar una Incidencia
+        this.coordenadas = new CoordenadasGps(latitud,longitud);
+        this.estado = EstadoIncidencia.PENDIENTE; // Asignamos por defecto el estado PENDIENTE al ser el primer estado por el que debe pasar una Incidencia
         this.dpto = dpto;
         this.emailUsuario = emailUsuario;
     }
@@ -64,14 +61,13 @@ public class Incidencia {
         return fecha;
     }
 
-    public Float latitud() {
-        return latitud;
+    public CoordenadasGps coordenadas() {
+        return coordenadas;
     }
 
-    public Float longitud() {
-        return longitud;
+    public void coordenadas(CoordenadasGps coordenadas) {
+        this.coordenadas = coordenadas;
     }
-
 
     public TipoIncidencia tipo() {
         return tipo;
@@ -130,8 +126,7 @@ public class Incidencia {
                 Objects.equals(tipo, u.tipo) &&
                 Objects.equals(descripcion, u.descripcion) &&
                 Objects.equals(localizacion, u.localizacion) &&
-                Objects.equals(latitud, u.latitud) &&
-                Objects.equals(longitud, u.longitud) &&
+                Objects.equals(coordenadas, u.coordenadas)&&
                 Objects.equals(dpto, u.dpto) &&
                 Objects.equals(emailUsuario, u.emailUsuario);
     }

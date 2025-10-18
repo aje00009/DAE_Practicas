@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -50,7 +51,7 @@ public class ServicioIncidencia {
      * @param emailUsuario email del usuario que ha notificado de la incidencia que se va a registrar
      */
     public void nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
-                                @NotBlank Float latitud,@NotBlank Float longitud, @NotBlank String dpto, @Email String emailUsuario) {
+                                @NotBlank float latitud,@NotBlank float longitud, @NotBlank String dpto, @Email String emailUsuario) {
 
         Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, new TipoIncidencia(nTipoIncidencia++,tipo),
                 descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
@@ -85,7 +86,7 @@ public class ServicioIncidencia {
      * @param clave Contraseña asociada al usuario para hacer login
      * @return Un objeto Optional encapsulando a un objeto Usuario o vacío si no se ha encontrado al usuario
      */
-    public Optional<Usuario> login(@Email String email, String clave){
+    public Optional<Usuario> login(@Email String email, @NotBlank String clave){
         if(email.equals(admin.email()) &&  clave.equals(admin.clave()))
             return Optional.of(admin);
 
@@ -98,7 +99,7 @@ public class ServicioIncidencia {
      * @param email Identificador único del usuario
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
-    public List<Incidencia> obtenerListaIncidenciasUsuario(String email){
+    public List<Incidencia> obtenerListaIncidenciasUsuario(@Email String email){
         return incidenciaMap.values().stream().filter(i -> i.emailUsuario().equals(email)).toList();
     }
 
@@ -108,7 +109,7 @@ public class ServicioIncidencia {
      * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
      * @return Devuelve una lista con las incidencias que tienen los valores deseados
      */
-    public List<Incidencia> buscarIncidenciasTipoEstado(String tipoIncidencia, EstadoIncidencia estadoIncidencia){
+    public List<Incidencia> buscarIncidenciasTipoEstado(@NotBlank String tipoIncidencia, EstadoIncidencia estadoIncidencia){
 
         return incidenciaMap.values().stream()
                 .filter(incidencia -> {
@@ -129,7 +130,7 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario logeado
      * @param idIncidencia identificador de la incidencia que se elimina
      */
-    public boolean borrarIncidencia(String email, int idIncidencia){
+    public boolean borrarIncidencia(@Email String email, @Positive int idIncidencia){
         // Primero buscamos si existe la incidencia (si no, lanzamos excepción)
         Incidencia incidencia = incidenciaMap.get(idIncidencia);
         if(incidencia == null) {
@@ -157,7 +158,7 @@ public class ServicioIncidencia {
      * @param estadoIncidencia Nuevo estado de la incidencia
      * @param idIncidencia Identificador de la incidencia a modificar
      */
-    public void modificarEstadoIncidencia(String email, EstadoIncidencia estadoIncidencia, int idIncidencia){
+    public void modificarEstadoIncidencia(@Email String email, EstadoIncidencia estadoIncidencia, @Positive int idIncidencia){
         Incidencia incidencia = incidenciaMap.get(idIncidencia);
 
         if(incidencia == null) {
@@ -176,7 +177,7 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario
      * @param tipoIncidencia Tipo de incidencia a añadir
      */
-    public void crearTipoIncidencia(String email, String tipoIncidencia){
+    public void crearTipoIncidencia(@Email String email, @NotBlank String tipoIncidencia){
         if(!email.equals("admin")){
             throw new AccionNoAutorizada();
         }
@@ -195,7 +196,7 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario
      * @param tipoIncidencia tipo de Incidencia a borrar
      */
-    public void borrarTipoIncidencia(String email, String tipoIncidencia){
+    public void borrarTipoIncidencia(@Email String email, @NotBlank String tipoIncidencia){
         if(!email.equals("admin")) {
             throw new AccionNoAutorizada();
         }

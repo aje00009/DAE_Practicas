@@ -1,7 +1,12 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
 public class TipoIncidencia {
+    @Positive
     private int id;
+    @NotBlank
     private String nombre;
 
     public TipoIncidencia(int id, String nombre) {
