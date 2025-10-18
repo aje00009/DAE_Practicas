@@ -1,5 +1,6 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +17,7 @@ public class Incidencia {
     private LocalDateTime fecha;
 
     @NotBlank
-    private String tipo;
+    private TipoIncidencia tipo;
 
     @NotBlank
     private String descripcion;
@@ -40,7 +41,7 @@ public class Incidencia {
     private String emailUsuario; //< Email del usuario que ha registrado la Incidencia
 
 
-    public Incidencia(Integer id, LocalDateTime fecha, String tipo, String descripcion, String localizacion,
+    public Incidencia(Integer id, LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
                       Float latitud, Float longitud,  String dpto,  String emailUsuario) {
         this.id = id;
         this.fecha = fecha;
@@ -72,11 +73,11 @@ public class Incidencia {
     }
 
 
-    public String tipo() {
+    public TipoIncidencia tipo() {
         return tipo;
     }
 
-    public void tipo(String tipo) {
+    public void tipo(TipoIncidencia tipo) {
         this.tipo = tipo;
     }
 

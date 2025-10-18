@@ -1,6 +1,7 @@
 package es.ujaen.dae.indicenciasurbanas.servicios;
 
-import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
 import es.ujaen.dae.indicenciasurbanas.excepciones.*;
@@ -18,10 +19,11 @@ import java.util.*;
 @Service
 @Validated
 public class ServicioIncidencia {
-    private List<String> tipoIncidencia;
+    private List<TipoIncidencia> tipoIncidencia;
     private Map<String, Usuario> usuarioMap;
     private Map<Integer, Incidencia> incidenciaMap;
     private static int nIncidencia= 1;
+    private static int nTipoIncidencia = 1;
 
     private static final Usuario admin = new Usuario("administrador","administrador",
             LocalDate.of(1995,1,1),"-",661030462,"admin.dae@ujaen.es","admin");
@@ -31,13 +33,13 @@ public class ServicioIncidencia {
         this.incidenciaMap = new HashMap<>();
         tipoIncidencia = new ArrayList<>();
 
-        tipoIncidencia.add("Suciedad");
-        tipoIncidencia.add("Rotura en parque");
-        tipoIncidencia.add("Rotura en mobiliario urbano");
+        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Suciedad"));
+        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Rotura en parque"));
+        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Rotura en mobiliario urbano"));
     }
 
     /**
-     *Registro de una nueva Incidencia en el sistema
+     * Registro de una nueva Incidencia en el sistema
      * @param fecha fecha de la Incidencia que va a ser registrada
      * @param tipo tipo de la Incidencia que va se va a registrar
      * @param descripcion descripción de la Incidencia que se va a registrar
@@ -50,7 +52,8 @@ public class ServicioIncidencia {
     public void nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
                                 @NotBlank Float latitud,@NotBlank Float longitud, @NotBlank String dpto, @Email String emailUsuario) {
 
-        Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, tipo, descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
+        Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, new TipoIncidencia(nTipoIncidencia++,tipo),
+                descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
 
         boolean existe = incidenciaMap.values().stream().anyMatch(existente -> existente.equals(nuevaIncidencia));
 
@@ -111,7 +114,7 @@ public class ServicioIncidencia {
                 .filter(incidencia -> {
 
                     //Comprobación del tipo
-                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().equalsIgnoreCase(tipoIncidencia));
+                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().nombre().equalsIgnoreCase(tipoIncidencia));
 
                     //Comprobación del estado
                     boolean estadoCoincide = (estadoIncidencia == null || incidencia.estado() == estadoIncidencia);
@@ -178,11 +181,13 @@ public class ServicioIncidencia {
             throw new AccionNoAutorizada();
         }
 
-        if(this.tipoIncidencia.contains(tipoIncidencia)){
-            throw new TipoIncidenciaExiste();
+        for (TipoIncidencia tipo : this.tipoIncidencia) {
+            if(tipo.nombre().equals(tipoIncidencia)) {
+                throw new TipoIncidenciaExiste();
+            }
         }
 
-        this.tipoIncidencia.add(tipoIncidencia);
+        this.tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,tipoIncidencia));
     }
 
     /**
@@ -194,15 +199,20 @@ public class ServicioIncidencia {
         if(!email.equals("admin")) {
             throw new AccionNoAutorizada();
         }
-        if(!this.tipoIncidencia.contains(tipoIncidencia)) {
-            throw new TipoIncidenciaNoExiste();
-        }
 
         if (!buscarIncidenciasTipoEstado(tipoIncidencia, null).isEmpty()) {
             throw new TipoIncidenciaEnUso();
         }
 
-        this.tipoIncidencia.remove(tipoIncidencia);
+        boolean enc = false;
+        for (TipoIncidencia tipo : this.tipoIncidencia) {
+            if(tipo.nombre().equals(tipoIncidencia)) {
+                enc = this.tipoIncidencia.remove(tipo);
+            }
+        }
+
+        if(!enc)
+            throw new TipoIncidenciaNoExiste();
 
     }
 }

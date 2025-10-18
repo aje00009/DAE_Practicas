@@ -23,3 +23,5 @@
 - Modificación de los métodos ``crearTipoIncidencia`` y ``borrarTipoIncidencia`` para permitir crear y borrar un tipo de Incidencia (Carlos Mayor Navarro)
 - Creación de las clases ``TipoIncidenciaEnUso``,``TipoIncidenciaExiste``, ``TipoIncidenciaNoExiste`` para lanzar una excepción en cada caso cuando sea necesario (Carlos Mayor Navarro)
 - Modificación del método ``clave`` de la clase ``Usuario`` para permitir que solo el administrador pueda modificar su propia clave (Carlos Mayor Navarro)
+- Creación de la entidad ``TipoIncidencia`` para representar los distintos tipos de incidencia que hay en el sistema (Alberto Jiménez Expósito)
+- Modificación del atributo ``tipo`` en clase `Incidencia` con sus respectivos cambios necesarios en `ServicioIncidencia` (Alberto Jiménez Expósito)
