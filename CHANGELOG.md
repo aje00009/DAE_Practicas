@@ -27,3 +27,6 @@
 - Modificación del atributo ``tipo`` en clase `Incidencia` con sus respectivos cambios necesarios en `ServicioIncidencia` (Alberto Jiménez Expósito)
 - Creación de la clase ``CoordenadasGps`` para el uso de la misma de dentro de la entidad ``Incidencia`` (Carlos Mayor Navarro)
 - Modificaciones varias de las notaciones de BeanValidation en diferentes clases y de los Tipos ``Float`` por el primitivo ``float`` e ``Integer`` por ``int``(Carlos Mayor Navarro)
+- Creación de la clase ``TestServicioIncidencia`` para testear los métodos del servicio ``ServicioIncidencia`` (María Ximena Galdames Fernandes)
+- Modificación de la clase ``TipoIncidencia`` y ``CoordenadasGps`` para añadir los sobreescribir los métodos ``equals`` y ``hashCode`` para poder comparar incidencias (María Ximena Galdames Fernandes)
+- Correcciones menores en los métodos del servicio ``ServicioIncidencia`` (María Ximena Galdames Fernandes)

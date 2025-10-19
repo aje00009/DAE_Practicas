@@ -1,7 +1,10 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
+import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+
+import java.util.Objects;
 
 public class TipoIncidencia {
     @Positive
@@ -28,5 +31,18 @@ public class TipoIncidencia {
 
     public void nombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TipoIncidencia that = (TipoIncidencia) o;
+        return Objects.equals(nombre, that.nombre); // Solo por nombre
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nombre); // Solo por nombre
     }
 }

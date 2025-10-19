@@ -133,7 +133,7 @@ public class Incidencia {
 
     @Override
     public int hashCode() {
-        return Objects.hash(tipo, localizacion, descripcion, emailUsuario);
+        return Objects.hash(fecha, tipo, descripcion, localizacion, coordenadas, dpto, emailUsuario);
     }
 
 }

@@ -49,8 +49,9 @@ public class ServicioIncidencia {
      * @param longitud coordenadas y del la localización de la incidencia que se va a registrar
      * @param dpto nombre del departamento que se va a asignar a la incidencia
      * @param emailUsuario email del usuario que ha notificado de la incidencia que se va a registrar
+     * return Devuelve el identificador de la incidencia creada
      */
-    public void nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
+    public int nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
                                 @NotBlank float latitud,@NotBlank float longitud, @NotBlank String dpto, @Email String emailUsuario) {
 
         Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, new TipoIncidencia(nTipoIncidencia++,tipo),
@@ -63,6 +64,7 @@ public class ServicioIncidencia {
         }
 
         incidenciaMap.put(nuevaIncidencia.id(), nuevaIncidencia);
+        return nuevaIncidencia.id();
     }
 
     /**
@@ -75,7 +77,7 @@ public class ServicioIncidencia {
             throw new UsuarioYaRegistrado();
 
         Usuario u = usuarioMap.putIfAbsent(usuario.email(),usuario);
-        if( u==null ) {
+        if( u!=null ) {
             throw new UsuarioYaRegistrado();
         }
     }
@@ -140,7 +142,7 @@ public class ServicioIncidencia {
         // Condiciones para borrar
         boolean esAdmin = "admin".equalsIgnoreCase(email);
         boolean esPropietario = incidencia.emailUsuario().equals(email);
-        boolean estaPendiente = incidencia.estado() == EstadoIncidencia.PENDIENTE;
+        boolean estaPendiente = (incidencia.estado() == EstadoIncidencia.PENDIENTE);
 
         // Se borra si cumple condiciones
         if (esAdmin || (esPropietario && estaPendiente)) {
@@ -205,15 +207,16 @@ public class ServicioIncidencia {
             throw new TipoIncidenciaEnUso();
         }
 
-        boolean enc = false;
-        for (TipoIncidencia tipo : this.tipoIncidencia) {
-            if(tipo.nombre().equals(tipoIncidencia)) {
-                enc = this.tipoIncidencia.remove(tipo);
+        int enc = -1;
+        for (int i = 0; i < this.tipoIncidencia.size(); i++) {
+            if(this.tipoIncidencia.get(i).nombre().equals(tipoIncidencia)) {
+                enc = i;
             }
         }
 
-        if(!enc)
+        if(enc==-1)
             throw new TipoIncidenciaNoExiste();
 
+        this.tipoIncidencia.remove(enc);
     }
 }

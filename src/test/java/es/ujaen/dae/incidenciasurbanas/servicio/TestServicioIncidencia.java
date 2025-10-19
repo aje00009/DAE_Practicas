@@ -1,18 +1,17 @@
 package es.ujaen.dae.incidenciasurbanas.servicio;
 
-import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
 import es.ujaen.dae.indicenciasurbanas.excepciones.*;
 import es.ujaen.dae.indicenciasurbanas.servicios.ServicioIncidencia;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import static org.assertj.core.api.Assertions.assertThat;
 
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,22 +19,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.*;
+
 @SpringBootTest(classes = es.ujaen.dae.indicenciasurbanas.servicios.ServicioIncidencia.class)
 public class TestServicioIncidencia {
-
     @Autowired
     ServicioIncidencia servicioIncidencia;
+
+    @BeforeEach
+    void setUp() {
+        servicioIncidencia = new ServicioIncidencia(); // o con mocks si tiene dependencias
+    }
 
     @Test
     @DirtiesContext
     public void testNuevaIncidencia() {
 
         //Crear Incidencia
-        LocalDateTime fecha = LocalDateTime.now();
-        servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        LocalDateTime fecha = LocalDateTime.of(2025,1,1,0,0);
+        servicioIncidencia.nuevaIncidencia(fecha, "tipo" , "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
 
         //Repetición de incidencia
-        assertThatThrownBy(() -> servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com")).isInstanceOf(IncidenciaYaRegistrada.class);
+        assertThatThrownBy(() -> servicioIncidencia.nuevaIncidencia(fecha, "tipo" , "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com")).isInstanceOf(IncidenciaYaRegistrada.class);
     }
 
     @Test
@@ -45,7 +50,6 @@ public class TestServicioIncidencia {
         //Crear Usuario normal
         LocalDate fecha = LocalDate.of(2000, 1, 1);
         Usuario usuario=new Usuario("nombre", "apellido", fecha, "direccion", 777123456, "email@gmail.com", "clave");
-
         servicioIncidencia.nuevoUsuario(usuario);
 
         //Repetir usuario
@@ -67,7 +71,7 @@ public class TestServicioIncidencia {
         assertThat(resultado.get().email()).isEqualTo("admin.dae@ujaen.es");
 
         //Obtener usuario que no existe
-        resultado = servicioIncidencia.login("usuario@ujaen.es", "usuario");
+        resultado = servicioIncidencia.login("email@gmail.com", "clave");
         assertThat(resultado).isEmpty();
 
         //Obtener usuario que existe
@@ -85,19 +89,27 @@ public class TestServicioIncidencia {
     public void testObtenerIncidenciasUsuario(){
         // Probar que se obtiene la lista de incidencias del usuario correcto
         LocalDateTime fecha = LocalDateTime.now();
-        servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+
+        int id1=servicioIncidencia.nuevaIncidencia(fecha, "tipo1", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        int id2=servicioIncidencia.nuevaIncidencia(fecha, "tipo2", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
+        int id3=servicioIncidencia.nuevaIncidencia(fecha, "tipo3","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
 
         LocalDate fechanac = LocalDate.of(2000, 1, 1);
-        servicioIncidencia.nuevoUsuario(new Usuario("nombre", "apellido", fechanac, "direccion", 777123456, "usuario@gmail.com", "clave"));
-        servicioIncidencia.nuevoUsuario(new Usuario("nombre", "apellido", fechanac, "direccion", 777123456, "email@gmail.com", "clave"));
 
         List<Incidencia> incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("email@gmail.com");
 
         assertThat(incidencias).hasSize(2);
-        assertThat(incidencias.get(0).id()).isEqualTo(1);
-        assertThat(incidencias.get(1).id()).isEqualTo(3);
+        assertThat(incidencias.get(0).id()).isEqualTo(id1);
+        assertThat(incidencias.get(1).id()).isEqualTo(id3);
+
+        incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("usuario@gmail.com");
+        assertThat(incidencias).hasSize(1);
+        assertThat(incidencias.get(0).id()).isEqualTo(id2);
+
+        // Probar obtener lista de usuario sin incidencias
+
+        incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("cliente@gmail.com");
+        assertThat(incidencias).hasSize(0);
 
     }
 
@@ -105,33 +117,30 @@ public class TestServicioIncidencia {
     @DirtiesContext
     public void testBuscarIncidencias(){
         LocalDateTime fecha = LocalDateTime.now();
-        servicioIncidencia.nuevaIncidencia(fecha, "Suciedad", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en parque", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+
+        int id1=servicioIncidencia.nuevaIncidencia(fecha, "Suciedad","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        int id2=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en parque","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
+        int id3=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
 
         // Probar a buscar por solo tipo
         List<Incidencia> incidencias=servicioIncidencia.buscarIncidenciasTipoEstado("Suciedad", null);
-
         assertThat(incidencias).hasSize(1);
-        assertThat(incidencias.get(0).id()).isEqualTo(1);
+        assertThat(incidencias.get(0).id()).isEqualTo(id1);
 
         // Porbar a buscar por solo estado
         incidencias=servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.PENDIENTE);
-
         assertThat(incidencias).hasSize(3);
-        assertThat(incidencias.get(0).id()).isEqualTo(1);
+        assertThat(incidencias.get(0).id()).isEqualTo(id1);
 
         // Probar a buscar por tipo y estado
         incidencias=servicioIncidencia.buscarIncidenciasTipoEstado("Rotura en parque", EstadoIncidencia.PENDIENTE);
-
         assertThat(incidencias).hasSize(1);
-        assertThat(incidencias.get(0).id()).isEqualTo(2);
+        assertThat(incidencias.get(0).id()).isEqualTo(id2);
 
         // Porbar a buscar sin especificaciones
         incidencias=servicioIncidencia.buscarIncidenciasTipoEstado(null, null);
-
         assertThat(incidencias).hasSize(3);
-        assertThat(incidencias.get(0).id()).isEqualTo(1);
+        assertThat(incidencias.get(0).id()).isEqualTo(id1);
 
     }
 
@@ -142,22 +151,22 @@ public class TestServicioIncidencia {
         assertThatThrownBy(() -> servicioIncidencia.borrarIncidencia("admin", 1)).isInstanceOf(IncidenciaNoExiste.class);
 
         LocalDateTime fecha = LocalDateTime.now();
-        servicioIncidencia.nuevaIncidencia(fecha, "Suciedad", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en parque", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+
+        int id1=servicioIncidencia.nuevaIncidencia(fecha, "tipo1","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        int id2=servicioIncidencia.nuevaIncidencia(fecha, "tipo2","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
 
         // Probar a borrar como usuario ajeno a la incidencia
-        assertThat(servicioIncidencia.borrarIncidencia("usuario@gmail.com",1)).isEqualTo(false);
+        assertThat(servicioIncidencia.borrarIncidencia("usuario@gmail.com",id1)).isEqualTo(false);
 
         // Probar a borrar como usuario de la incidencia con estado invalido
-        assertThat(servicioIncidencia.borrarIncidencia("email@gmail.com",1)).isEqualTo(false);
+        servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.RESUELTA, id2);
+        assertThat(servicioIncidencia.borrarIncidencia("usuario@gmail.com",id2)).isEqualTo(false);
 
         // Porbar a borrar como usuario de la incidencia con estado valido
-        servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.RESUELTA, 1);
-        assertThat(servicioIncidencia.borrarIncidencia("email@gmail.com",1)).isEqualTo(true);
+        assertThat(servicioIncidencia.borrarIncidencia("email@gmail.com",id1)).isEqualTo(true);
 
         // Probar a borrar como admin
-        assertThat(servicioIncidencia.borrarIncidencia("admin",2)).isEqualTo(true);
+        assertThat(servicioIncidencia.borrarIncidencia("admin",id2)).isEqualTo(true);
 
     }
 
@@ -168,15 +177,17 @@ public class TestServicioIncidencia {
         assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.EN_EVALUACION,1)).isInstanceOf(IncidenciaNoExiste.class);
 
         LocalDateTime fecha = LocalDateTime.now();
-        servicioIncidencia.nuevaIncidencia(fecha, "Suciedad", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        //Incidencia incidencia1=new Incidencia(1,fecha, servicioIncidencia.obtenerTipoIncidencias().get(0), "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+
+        int id=servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "cliente@gmail.com");
 
         // Probar a modificar como admin
-        servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.EN_EVALUACION,1);
-        assertThat(servicioIncidencia.buscarIncidenciasTipoEstado("", EstadoIncidencia.EN_EVALUACION)).hasSize(1);
-        assertThat(servicioIncidencia.buscarIncidenciasTipoEstado("", EstadoIncidencia.PENDIENTE)).hasSize(0);
+        servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.EN_EVALUACION,id);
+        assertThat(servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.EN_EVALUACION)).hasSize(1);
+        assertThat(servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.PENDIENTE)).hasSize(0);
 
         // Porbar a modificar como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia("usuario@gmail.com", EstadoIncidencia.RESUELTA, 1)).isInstanceOf(AccionNoAutorizada.class);
+        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia("usuario@gmail.com", EstadoIncidencia.RESUELTA, id)).isInstanceOf(AccionNoAutorizada.class);
     }
 
     @Test
@@ -197,8 +208,9 @@ public class TestServicioIncidencia {
     @DirtiesContext
     public void testBorrarTipoIncidencia(){
         LocalDateTime fecha = LocalDateTime.now();
+
         servicioIncidencia.nuevaIncidencia(fecha, "Suciedad", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
 
         // Probar a borrar como admin con incidencias de ese tipo
         assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", "Suciedad")).isInstanceOf(TipoIncidenciaEnUso.class);
@@ -207,10 +219,10 @@ public class TestServicioIncidencia {
         servicioIncidencia.borrarTipoIncidencia("admin", "Rotura en parque");
 
         // Probar a borrar tipo de incidencia inexistente
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", "tipoIncidencia")).isInstanceOf(TipoIncidenciaNoExiste.class);
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", "tipo")).isInstanceOf(TipoIncidenciaNoExiste.class);
 
         // Probar a borrar como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("usuario@gmail.com", "Rotura en parque")).isInstanceOf(AccionNoAutorizada.class);
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("usuario@gmail.com", "Suciedad")).isInstanceOf(AccionNoAutorizada.class);
     }
 
 }
