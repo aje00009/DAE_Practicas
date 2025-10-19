@@ -1,6 +1,7 @@
 package es.ujaen.dae.indicenciasurbanas.servicios;
 
-import es.ujaen.dae.indicenciasurbanas.entidades.EstadoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
 import es.ujaen.dae.indicenciasurbanas.excepciones.*;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -18,10 +20,11 @@ import java.util.*;
 @Service
 @Validated
 public class ServicioIncidencia {
-    private List<String> tipoIncidencia;
+    private List<TipoIncidencia> tipoIncidencia;
     private Map<String, Usuario> usuarioMap;
     private Map<Integer, Incidencia> incidenciaMap;
     private static int nIncidencia= 1;
+    private static int nTipoIncidencia = 1;
 
     private static final Usuario admin = new Usuario("administrador","administrador",
             LocalDate.of(1995,1,1),"-",661030462,"admin.dae@ujaen.es","admin");
@@ -31,13 +34,13 @@ public class ServicioIncidencia {
         this.incidenciaMap = new HashMap<>();
         tipoIncidencia = new ArrayList<>();
 
-        tipoIncidencia.add("Suciedad");
-        tipoIncidencia.add("Rotura en parque");
-        tipoIncidencia.add("Rotura en mobiliario urbano");
+        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Suciedad"));
+        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Rotura en parque"));
+        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Rotura en mobiliario urbano"));
     }
 
     /**
-     *Registro de una nueva Incidencia en el sistema
+     * Registro de una nueva Incidencia en el sistema
      * @param fecha fecha de la Incidencia que va a ser registrada
      * @param tipo tipo de la Incidencia que va se va a registrar
      * @param descripcion descripción de la Incidencia que se va a registrar
@@ -48,9 +51,10 @@ public class ServicioIncidencia {
      * @param emailUsuario email del usuario que ha notificado de la incidencia que se va a registrar
      */
     public void nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
-                                @NotBlank Float latitud,@NotBlank Float longitud, @NotBlank String dpto, @Email String emailUsuario) {
+                                @NotBlank float latitud,@NotBlank float longitud, @NotBlank String dpto, @Email String emailUsuario) {
 
-        Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, tipo, descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
+        Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, new TipoIncidencia(nTipoIncidencia++,tipo),
+                descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
 
         boolean existe = incidenciaMap.values().stream().anyMatch(existente -> existente.equals(nuevaIncidencia));
 
@@ -82,7 +86,7 @@ public class ServicioIncidencia {
      * @param clave Contraseña asociada al usuario para hacer login
      * @return Un objeto Optional encapsulando a un objeto Usuario o vacío si no se ha encontrado al usuario
      */
-    public Optional<Usuario> login(@Email String email, String clave){
+    public Optional<Usuario> login(@Email String email, @NotBlank String clave){
         if(email.equals(admin.email()) &&  clave.equals(admin.clave()))
             return Optional.of(admin);
 
@@ -95,7 +99,7 @@ public class ServicioIncidencia {
      * @param email Identificador único del usuario
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
-    public List<Incidencia> obtenerListaIncidenciasUsuario(String email){
+    public List<Incidencia> obtenerListaIncidenciasUsuario(@Email String email){
         return incidenciaMap.values().stream().filter(i -> i.emailUsuario().equals(email)).toList();
     }
 
@@ -105,13 +109,13 @@ public class ServicioIncidencia {
      * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
      * @return Devuelve una lista con las incidencias que tienen los valores deseados
      */
-    public List<Incidencia> buscarIncidenciasTipoEstado(String tipoIncidencia, EstadoIncidencia estadoIncidencia){
+    public List<Incidencia> buscarIncidenciasTipoEstado(@NotBlank String tipoIncidencia, EstadoIncidencia estadoIncidencia){
 
         return incidenciaMap.values().stream()
                 .filter(incidencia -> {
 
                     //Comprobación del tipo
-                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().equalsIgnoreCase(tipoIncidencia));
+                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().nombre().equalsIgnoreCase(tipoIncidencia));
 
                     //Comprobación del estado
                     boolean estadoCoincide = (estadoIncidencia == null || incidencia.estado() == estadoIncidencia);
@@ -126,7 +130,7 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario logeado
      * @param idIncidencia identificador de la incidencia que se elimina
      */
-    public boolean borrarIncidencia(String email, int idIncidencia){
+    public boolean borrarIncidencia(@Email String email, @Positive int idIncidencia){
         // Primero buscamos si existe la incidencia (si no, lanzamos excepción)
         Incidencia incidencia = incidenciaMap.get(idIncidencia);
         if(incidencia == null) {
@@ -154,7 +158,7 @@ public class ServicioIncidencia {
      * @param estadoIncidencia Nuevo estado de la incidencia
      * @param idIncidencia Identificador de la incidencia a modificar
      */
-    public void modificarEstadoIncidencia(String email, EstadoIncidencia estadoIncidencia, int idIncidencia){
+    public void modificarEstadoIncidencia(@Email String email, EstadoIncidencia estadoIncidencia, @Positive int idIncidencia){
         Incidencia incidencia = incidenciaMap.get(idIncidencia);
 
         if(incidencia == null) {
@@ -173,16 +177,18 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario
      * @param tipoIncidencia Tipo de incidencia a añadir
      */
-    public void crearTipoIncidencia(String email, String tipoIncidencia){
+    public void crearTipoIncidencia(@Email String email, @NotBlank String tipoIncidencia){
         if(!email.equals("admin")){
             throw new AccionNoAutorizada();
         }
 
-        if(this.tipoIncidencia.contains(tipoIncidencia)){
-            throw new TipoIncidenciaExiste();
+        for (TipoIncidencia tipo : this.tipoIncidencia) {
+            if(tipo.nombre().equals(tipoIncidencia)) {
+                throw new TipoIncidenciaExiste();
+            }
         }
 
-        this.tipoIncidencia.add(tipoIncidencia);
+        this.tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,tipoIncidencia));
     }
 
     /**
@@ -190,19 +196,24 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario
      * @param tipoIncidencia tipo de Incidencia a borrar
      */
-    public void borrarTipoIncidencia(String email, String tipoIncidencia){
+    public void borrarTipoIncidencia(@Email String email, @NotBlank String tipoIncidencia){
         if(!email.equals("admin")) {
             throw new AccionNoAutorizada();
-        }
-        if(!this.tipoIncidencia.contains(tipoIncidencia)) {
-            throw new TipoIncidenciaNoExiste();
         }
 
         if (!buscarIncidenciasTipoEstado(tipoIncidencia, null).isEmpty()) {
             throw new TipoIncidenciaEnUso();
         }
 
-        this.tipoIncidencia.remove(tipoIncidencia);
+        boolean enc = false;
+        for (TipoIncidencia tipo : this.tipoIncidencia) {
+            if(tipo.nombre().equals(tipoIncidencia)) {
+                enc = this.tipoIncidencia.remove(tipo);
+            }
+        }
+
+        if(!enc)
+            throw new TipoIncidenciaNoExiste();
 
     }
 }
