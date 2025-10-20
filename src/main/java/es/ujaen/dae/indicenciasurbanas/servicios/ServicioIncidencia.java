@@ -57,12 +57,6 @@ public class ServicioIncidencia {
         Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, new TipoIncidencia(nTipoIncidencia++,tipo),
                 descripcion, localizacion, latitud, longitud, dpto, emailUsuario);
 
-        boolean existe = incidenciaMap.values().stream().anyMatch(existente -> existente.equals(nuevaIncidencia));
-
-        if (existe) {
-            throw new IncidenciaYaRegistrada();
-        }
-
         incidenciaMap.put(nuevaIncidencia.id(), nuevaIncidencia);
         return nuevaIncidencia.id();
     }
