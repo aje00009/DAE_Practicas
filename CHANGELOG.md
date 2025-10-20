@@ -31,3 +31,4 @@
 - Modificación de la clase ``TipoIncidencia`` y ``CoordenadasGps`` para añadir los sobreescribir los métodos ``equals`` y ``hashCode`` para poder comparar incidencias (María Ximena Galdames Fernandes)
 - Correcciones menores en los métodos del servicio ``ServicioIncidencia`` (María Ximena Galdames Fernandes)
 - Actualización diagrama UML (María Ximena Galdames Fernandes)
+- Modificación de parámetro tipo de incidencia en `ServicioIncidencia` de un `String` a un objeto `TipoIncidencia` (Alberto Jiménez Expósito)

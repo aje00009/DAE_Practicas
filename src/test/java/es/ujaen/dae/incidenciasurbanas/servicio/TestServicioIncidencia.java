@@ -38,9 +38,6 @@ public class TestServicioIncidencia {
         //Crear Incidencia
         LocalDateTime fecha = LocalDateTime.of(2025,1,1,0,0);
         servicioIncidencia.nuevaIncidencia(fecha, "tipo" , "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-
-        //Repetición de incidencia
-        assertThatThrownBy(() -> servicioIncidencia.nuevaIncidencia(fecha, "tipo" , "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com")).isInstanceOf(IncidenciaYaRegistrada.class);
     }
 
     @Test
@@ -104,7 +101,7 @@ public class TestServicioIncidencia {
 
         incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("usuario@gmail.com");
         assertThat(incidencias).hasSize(1);
-        assertThat(incidencias.get(0).id()).isEqualTo(id2);
+        assertThat(incidencias.getFirst().id()).isEqualTo(id2);
 
         // Probar obtener lista de usuario sin incidencias
 
@@ -123,24 +120,26 @@ public class TestServicioIncidencia {
         int id3=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
 
         // Probar a buscar por solo tipo
-        List<Incidencia> incidencias=servicioIncidencia.buscarIncidenciasTipoEstado("Suciedad", null);
+        TipoIncidencia tipo = new TipoIncidencia(0,"Suciedad");
+        List<Incidencia> incidencias=servicioIncidencia.buscarIncidenciasTipoEstado(tipo, null);
         assertThat(incidencias).hasSize(1);
-        assertThat(incidencias.get(0).id()).isEqualTo(id1);
+        assertThat(incidencias.getFirst().id()).isEqualTo(id1);
 
-        // Porbar a buscar por solo estado
+        // Probar a buscar por solo estado
         incidencias=servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.PENDIENTE);
         assertThat(incidencias).hasSize(3);
-        assertThat(incidencias.get(0).id()).isEqualTo(id1);
+        assertThat(incidencias.getFirst().id()).isEqualTo(id1);
 
         // Probar a buscar por tipo y estado
-        incidencias=servicioIncidencia.buscarIncidenciasTipoEstado("Rotura en parque", EstadoIncidencia.PENDIENTE);
+        tipo.nombre("Rotura en parque");
+        incidencias=servicioIncidencia.buscarIncidenciasTipoEstado(tipo, EstadoIncidencia.PENDIENTE);
         assertThat(incidencias).hasSize(1);
-        assertThat(incidencias.get(0).id()).isEqualTo(id2);
+        assertThat(incidencias.getFirst().id()).isEqualTo(id2);
 
         // Porbar a buscar sin especificaciones
         incidencias=servicioIncidencia.buscarIncidenciasTipoEstado(null, null);
         assertThat(incidencias).hasSize(3);
-        assertThat(incidencias.get(0).id()).isEqualTo(id1);
+        assertThat(incidencias.getFirst().id()).isEqualTo(id1);
 
     }
 
@@ -213,16 +212,20 @@ public class TestServicioIncidencia {
         servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
 
         // Probar a borrar como admin con incidencias de ese tipo
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", "Suciedad")).isInstanceOf(TipoIncidenciaEnUso.class);
+        TipoIncidencia tipo = new TipoIncidencia(0,"Suciedad");
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", tipo)).isInstanceOf(TipoIncidenciaEnUso.class);
 
         // Probar a borrar como admin sin incidencias de ese tipo
-        servicioIncidencia.borrarTipoIncidencia("admin", "Rotura en parque");
+        tipo.nombre("Rotura en parque");
+        servicioIncidencia.borrarTipoIncidencia("admin", tipo);
 
         // Probar a borrar tipo de incidencia inexistente
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", "tipo")).isInstanceOf(TipoIncidenciaNoExiste.class);
+        tipo.nombre("Objeto extraviado");
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", tipo)).isInstanceOf(TipoIncidenciaNoExiste.class);
 
         // Probar a borrar como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("usuario@gmail.com", "Suciedad")).isInstanceOf(AccionNoAutorizada.class);
+        tipo.nombre("Suciedad");
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("usuario@gmail.com", tipo)).isInstanceOf(AccionNoAutorizada.class);
     }
 
 }

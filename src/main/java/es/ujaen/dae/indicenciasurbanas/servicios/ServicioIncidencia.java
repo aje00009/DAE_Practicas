@@ -105,13 +105,13 @@ public class ServicioIncidencia {
      * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
      * @return Devuelve una lista con las incidencias que tienen los valores deseados
      */
-    public List<Incidencia> buscarIncidenciasTipoEstado(@NotBlank String tipoIncidencia, EstadoIncidencia estadoIncidencia){
+    public List<Incidencia> buscarIncidenciasTipoEstado(@NotNull TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia){
 
         return incidenciaMap.values().stream()
                 .filter(incidencia -> {
 
                     //Comprobación del tipo
-                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().nombre().equalsIgnoreCase(tipoIncidencia));
+                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().nombre().equalsIgnoreCase(tipoIncidencia.nombre()));
 
                     //Comprobación del estado
                     boolean estadoCoincide = (estadoIncidencia == null || incidencia.estado() == estadoIncidencia);
@@ -192,7 +192,7 @@ public class ServicioIncidencia {
      * @param email Identificador del usuario
      * @param tipoIncidencia tipo de Incidencia a borrar
      */
-    public void borrarTipoIncidencia(@Email String email, @NotBlank String tipoIncidencia){
+    public void borrarTipoIncidencia(@Email String email, @NotBlank TipoIncidencia tipoIncidencia){
         if(!email.equals("admin")) {
             throw new AccionNoAutorizada();
         }
@@ -203,7 +203,7 @@ public class ServicioIncidencia {
 
         int enc = -1;
         for (int i = 0; i < this.tipoIncidencia.size(); i++) {
-            if(this.tipoIncidencia.get(i).nombre().equals(tipoIncidencia)) {
+            if(this.tipoIncidencia.get(i).nombre().equals(tipoIncidencia.nombre())) {
                 enc = i;
             }
         }
