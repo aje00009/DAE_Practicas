@@ -32,3 +32,4 @@
 - Correcciones menores en los métodos del servicio ``ServicioIncidencia`` (María Ximena Galdames Fernandes)
 - Actualización diagrama UML (María Ximena Galdames Fernandes)
 - Modificación de parámetro tipo de incidencia en `ServicioIncidencia` de un `String` a un objeto `TipoIncidencia` (Alberto Jiménez Expósito)
+- Modificación de ``DaePracticaApplicationTests`` para el correcto funcionamiento del test gracias a la importación de la clase principal del proyecto (Carlos Mayor Navarro)
