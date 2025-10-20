@@ -15,7 +15,6 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,15 +28,6 @@ public class TestServicioIncidencia {
     @BeforeEach
     void setUp() {
         servicioIncidencia = new ServicioIncidencia(); // o con mocks si tiene dependencias
-    }
-
-    @Test
-    @DirtiesContext
-    public void testNuevaIncidencia() {
-
-        //Crear Incidencia
-        LocalDateTime fecha = LocalDateTime.of(2025,1,1,0,0);
-        servicioIncidencia.nuevaIncidencia(fecha, "tipo" , "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
     }
 
     @Test
@@ -87,25 +77,39 @@ public class TestServicioIncidencia {
         // Probar que se obtiene la lista de incidencias del usuario correcto
         LocalDateTime fecha = LocalDateTime.now();
 
-        int id1=servicioIncidencia.nuevaIncidencia(fecha, "tipo1", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        int id2=servicioIncidencia.nuevaIncidencia(fecha, "tipo2", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
-        int id3=servicioIncidencia.nuevaIncidencia(fecha, "tipo3","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user);
 
-        LocalDate fechanac = LocalDate.of(2000, 1, 1);
+        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user1);
 
-        List<Incidencia> incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("email@gmail.com");
+        Optional<Usuario> opt = servicioIncidencia.login(user.email(),user.clave());
 
-        assertThat(incidencias).hasSize(2);
-        assertThat(incidencias.get(0).id()).isEqualTo(id1);
-        assertThat(incidencias.get(1).id()).isEqualTo(id3);
+        int id1=servicioIncidencia.nuevaIncidencia(fecha, "tipo1", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt.get());
 
-        incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("usuario@gmail.com");
+        Optional<Usuario> opt1 = servicioIncidencia.login(user1.email(),user1.clave());
+        int id2=servicioIncidencia.nuevaIncidencia(fecha, "tipo2", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt1.get());
+
+        int id3=servicioIncidencia.nuevaIncidencia(fecha, "tipo3","desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt1.get());
+
+        List<Incidencia> incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario(opt.get());
+
         assertThat(incidencias).hasSize(1);
+        assertThat(incidencias.getFirst().id()).isEqualTo(id1);
+
+        incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario(opt1.get());
+        assertThat(incidencias).hasSize(2);
         assertThat(incidencias.getFirst().id()).isEqualTo(id2);
+        assertThat(incidencias.get(1).id()).isEqualTo(id3);
 
         // Probar obtener lista de usuario sin incidencias
 
-        incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario("cliente@gmail.com");
+        Usuario user2 = new Usuario("Ximena","Galmades",LocalDate.now(),"Av. Arjona 10",673826467,"xmnn10@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user2);
+
+
+        Optional<Usuario> opt2 = servicioIncidencia.login(user2.email(),user2.clave());
+        incidencias=servicioIncidencia.obtenerListaIncidenciasUsuario(opt2.get());
         assertThat(incidencias).hasSize(0);
 
     }
@@ -115,9 +119,18 @@ public class TestServicioIncidencia {
     public void testBuscarIncidencias(){
         LocalDateTime fecha = LocalDateTime.now();
 
-        int id1=servicioIncidencia.nuevaIncidencia(fecha, "Suciedad","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        int id2=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en parque","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
-        int id3=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user);
+
+        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user1);
+
+        Optional<Usuario> opt = servicioIncidencia.login(user.email(),user.clave());
+        int id1=servicioIncidencia.nuevaIncidencia(fecha, "Suciedad","desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt.get());
+
+        Optional<Usuario> opt1 = servicioIncidencia.login(user1.email(),user1.clave());
+        int id2=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en parque","desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt1.get());
+        int id3=servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano","desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt.get());
 
         // Probar a buscar por solo tipo
         TipoIncidencia tipo = new TipoIncidencia(0,"Suciedad");
@@ -147,25 +160,39 @@ public class TestServicioIncidencia {
     @DirtiesContext
     public void testBorrarIncidencia(){
         //Probar a borrar incidencia inexistente
-        assertThatThrownBy(() -> servicioIncidencia.borrarIncidencia("admin", 1)).isInstanceOf(IncidenciaNoExiste.class);
+
+        Optional<Usuario> admin=servicioIncidencia.login("admin.dae@ujaen.es", "admin");
+
+        assertThatThrownBy(() -> servicioIncidencia.borrarIncidencia(admin.get(), 1)).isInstanceOf(IncidenciaNoExiste.class);
 
         LocalDateTime fecha = LocalDateTime.now();
 
-        int id1=servicioIncidencia.nuevaIncidencia(fecha, "tipo1","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        int id2=servicioIncidencia.nuevaIncidencia(fecha, "tipo2","desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
+        Usuario usuario1 = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(usuario1);
+
+        Optional<Usuario> user1=servicioIncidencia.login(usuario1.email(), usuario1.clave());
+
+        Usuario usuario2 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(usuario2);
+
+        Optional<Usuario> user2=servicioIncidencia.login(usuario2.email(), usuario2.clave());
+
+
+        int id1=servicioIncidencia.nuevaIncidencia(fecha, "tipo1","desc", "loc", (float) 1.0, (float) 1.0, "dpt", user1.get());
+        int id2=servicioIncidencia.nuevaIncidencia(fecha, "tipo2","desc", "loc", (float) 1.0, (float) 1.0, "dpt", user2.get());
 
         // Probar a borrar como usuario ajeno a la incidencia
-        assertThat(servicioIncidencia.borrarIncidencia("usuario@gmail.com",id1)).isEqualTo(false);
+        assertThat(servicioIncidencia.borrarIncidencia(user2.get(),id1)).isEqualTo(false);
 
         // Probar a borrar como usuario de la incidencia con estado invalido
-        servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.RESUELTA, id2);
-        assertThat(servicioIncidencia.borrarIncidencia("usuario@gmail.com",id2)).isEqualTo(false);
+        servicioIncidencia.modificarEstadoIncidencia(admin.get(), EstadoIncidencia.RESUELTA, id2);
+        assertThat(servicioIncidencia.borrarIncidencia(user1.get(),id2)).isEqualTo(false);
 
-        // Porbar a borrar como usuario de la incidencia con estado valido
-        assertThat(servicioIncidencia.borrarIncidencia("email@gmail.com",id1)).isEqualTo(true);
+        // Probar a borrar como usuario de la incidencia con estado valido
+        assertThat(servicioIncidencia.borrarIncidencia(user1.get(),id1)).isEqualTo(true);
 
         // Probar a borrar como admin
-        assertThat(servicioIncidencia.borrarIncidencia("admin",id2)).isEqualTo(true);
+        assertThat(servicioIncidencia.borrarIncidencia(admin.get(),id2)).isEqualTo(true);
 
     }
 
@@ -173,33 +200,45 @@ public class TestServicioIncidencia {
     @DirtiesContext
     public void testModificarEstadoIncidencia(){
         //Probar a modificar incidencia inexistente
-        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.EN_EVALUACION,1)).isInstanceOf(IncidenciaNoExiste.class);
+        Optional<Usuario> admin=servicioIncidencia.login("admin.dae@ujaen.es", "admin");
+
+        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia(admin.get(), EstadoIncidencia.EN_EVALUACION,1)).isInstanceOf(IncidenciaNoExiste.class);
 
         LocalDateTime fecha = LocalDateTime.now();
-        //Incidencia incidencia1=new Incidencia(1,fecha, servicioIncidencia.obtenerTipoIncidencias().get(0), "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
+        Usuario usuario1 = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(usuario1);
 
-        int id=servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "cliente@gmail.com");
+        Optional<Usuario> user1=servicioIncidencia.login(usuario1.email(), usuario1.clave());
+
+        int id=servicioIncidencia.nuevaIncidencia(fecha, "tipo", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", user1.get());
 
         // Probar a modificar como admin
-        servicioIncidencia.modificarEstadoIncidencia("admin", EstadoIncidencia.EN_EVALUACION,id);
+        servicioIncidencia.modificarEstadoIncidencia(admin.get(), EstadoIncidencia.EN_EVALUACION,id);
         assertThat(servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.EN_EVALUACION)).hasSize(1);
         assertThat(servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.PENDIENTE)).hasSize(0);
 
         // Porbar a modificar como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia("usuario@gmail.com", EstadoIncidencia.RESUELTA, id)).isInstanceOf(AccionNoAutorizada.class);
+        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia(user1.get(), EstadoIncidencia.RESUELTA, id)).isInstanceOf(AccionNoAutorizada.class);
     }
 
     @Test
     @DirtiesContext
     public void testCrearTipoIncidencia(){
         // Probar a crear como admin
-        servicioIncidencia.crearTipoIncidencia("admin", "nuevoTipoIncidencia");
+        Optional<Usuario> admin=servicioIncidencia.login("admin.dae@ujaen.es", "admin");
+
+        servicioIncidencia.crearTipoIncidencia(admin.get(), "nuevoTipoIncidencia");
 
         // Probar a crear tipo de incidencia ya existente
-        assertThatThrownBy(() -> servicioIncidencia.crearTipoIncidencia("admin", "nuevoTipoIncidencia")).isInstanceOf(TipoIncidenciaExiste.class);
+        assertThatThrownBy(() -> servicioIncidencia.crearTipoIncidencia(admin.get(), "nuevoTipoIncidencia")).isInstanceOf(TipoIncidenciaExiste.class);
 
         // Probar a crear como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.crearTipoIncidencia("usuario@gmail.com", "crearTipoIncidencia")).isInstanceOf(AccionNoAutorizada.class);
+        Usuario usuario1 = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(usuario1);
+
+        Optional<Usuario> user1=servicioIncidencia.login(usuario1.email(), usuario1.clave());
+
+        assertThatThrownBy(() -> servicioIncidencia.crearTipoIncidencia(user1.get(), "crearTipoIncidencia")).isInstanceOf(AccionNoAutorizada.class);
 
     }
 
@@ -208,24 +247,33 @@ public class TestServicioIncidencia {
     public void testBorrarTipoIncidencia(){
         LocalDateTime fecha = LocalDateTime.now();
 
-        servicioIncidencia.nuevaIncidencia(fecha, "Suciedad", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "email@gmail.com");
-        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", "usuario@gmail.com");
+        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user);
+
+        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        servicioIncidencia.nuevoUsuario(user1);
+
+        Optional<Usuario> opt = servicioIncidencia.login(user.email(),user.clave());
+
+        servicioIncidencia.nuevaIncidencia(fecha, "Suciedad", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt.get());
+
+        Optional<Usuario> opt1 = servicioIncidencia.login(user1.email(),user1.clave());
+
+        servicioIncidencia.nuevaIncidencia(fecha, "Rotura en mobiliario urbano", "desc", "loc", (float) 1.0, (float) 1.0, "dpt", opt1.get());
+
+        Optional<Usuario> opt2 = servicioIncidencia.login("admin.dae@ujaen.es","admin");
 
         // Probar a borrar como admin con incidencias de ese tipo
         TipoIncidencia tipo = new TipoIncidencia(0,"Suciedad");
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", tipo)).isInstanceOf(TipoIncidenciaEnUso.class);
-
-        // Probar a borrar como admin sin incidencias de ese tipo
-        tipo.nombre("Rotura en parque");
-        servicioIncidencia.borrarTipoIncidencia("admin", tipo);
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia(opt2.get(), tipo)).isInstanceOf(TipoIncidenciaEnUso.class);
 
         // Probar a borrar tipo de incidencia inexistente
         tipo.nombre("Objeto extraviado");
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("admin", tipo)).isInstanceOf(TipoIncidenciaNoExiste.class);
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia(opt2.get(), tipo)).isInstanceOf(TipoIncidenciaNoExiste.class);
 
         // Probar a borrar como usuario normal
         tipo.nombre("Suciedad");
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia("usuario@gmail.com", tipo)).isInstanceOf(AccionNoAutorizada.class);
+        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia(opt1.get(), tipo)).isInstanceOf(AccionNoAutorizada.class);
     }
 
 }

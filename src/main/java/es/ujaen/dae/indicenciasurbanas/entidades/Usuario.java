@@ -90,7 +90,7 @@ public class Usuario {
     }
 
     public void clave(String clave){
-        if(!this.email.equals("admin")) {
+        if(!this.email.equals("admin.dae@ujaen.es")) {
             throw new AccionNoAutorizada();
         }
         this.clave = clave;
