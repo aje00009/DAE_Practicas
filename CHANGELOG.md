@@ -25,6 +25,14 @@
 - Modificación del método ``clave`` de la clase ``Usuario`` para permitir que solo el administrador pueda modificar su propia clave (Carlos Mayor Navarro)
 - Creación de la entidad ``TipoIncidencia`` para representar los distintos tipos de incidencia que hay en el sistema (Alberto Jiménez Expósito)
 - Modificación del atributo ``tipo`` en clase `Incidencia` con sus respectivos cambios necesarios en `ServicioIncidencia` (Alberto Jiménez Expósito)
+- Creación de la clase ``CoordenadasGps`` para el uso de la misma de dentro de la entidad ``Incidencia`` (Carlos Mayor Navarro)
+- Modificaciones varias de las notaciones de BeanValidation en diferentes clases y de los Tipos ``Float`` por el primitivo ``float`` e ``Integer`` por ``int``(Carlos Mayor Navarro)
+- Creación de la clase ``TestServicioIncidencia`` para testear los métodos del servicio ``ServicioIncidencia`` (María Ximena Galdames Fernandes)
+- Modificación de la clase ``TipoIncidencia`` y ``CoordenadasGps`` para añadir los sobreescribir los métodos ``equals`` y ``hashCode`` para poder comparar incidencias (María Ximena Galdames Fernandes)
+- Correcciones menores en los métodos del servicio ``ServicioIncidencia`` (María Ximena Galdames Fernandes)
+- Actualización diagrama UML (María Ximena Galdames Fernandes)
+- Modificación de parámetro tipo de incidencia en `ServicioIncidencia` de un `String` a un objeto `TipoIncidencia` (Alberto Jiménez Expósito)
+- Modificación de ``DaePracticaApplicationTests`` para el correcto funcionamiento del test gracias a la importación de la clase principal del proyecto (Carlos Mayor Navarro)
 
 ### ITERACIÓN 2
 - Modificación de archivos de configuración para persistencia JPA (Alberto Jiménez Expósito)
