@@ -25,3 +25,6 @@
 - Modificación del método ``clave`` de la clase ``Usuario`` para permitir que solo el administrador pueda modificar su propia clave (Carlos Mayor Navarro)
 - Creación de la entidad ``TipoIncidencia`` para representar los distintos tipos de incidencia que hay en el sistema (Alberto Jiménez Expósito)
 - Modificación del atributo ``tipo`` en clase `Incidencia` con sus respectivos cambios necesarios en `ServicioIncidencia` (Alberto Jiménez Expósito)
+
+### ITERACIÓN 2
+- Modificación de archivos de configuración para persistencia JPA (Alberto Jiménez Expósito)
