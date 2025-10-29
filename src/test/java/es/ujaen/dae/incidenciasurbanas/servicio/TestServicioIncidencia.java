@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(classes = es.ujaen.dae.indicenciasurbanas.servicios.ServicioIncidencia.class)
+@ActiveProfiles("test")
 public class TestServicioIncidencia {
     @Autowired
     ServicioIncidencia servicioIncidencia;

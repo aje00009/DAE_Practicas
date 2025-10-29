@@ -2,6 +2,7 @@ package es.ujaen.dae.indicenciasurbanas.entidades;
 
 import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,13 +11,17 @@ import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
 public class Incidencia {
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Positive
     private int id;
 
     @NotNull
     private LocalDateTime fecha;
 
+    @Transient
     @NotBlank
     private TipoIncidencia tipo;
 
@@ -26,6 +31,7 @@ public class Incidencia {
     @NotBlank
     private String localizacion;
 
+    @Transient
     @NotNull
     private CoordenadasGps coordenadas;
 
@@ -51,6 +57,8 @@ public class Incidencia {
         this.dpto = dpto;
         this.emailUsuario = emailUsuario;
     }
+
+    public Incidencia() {}
 
 
     public Integer id() {

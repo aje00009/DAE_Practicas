@@ -1,14 +1,22 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
 import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
 import java.util.Objects;
 
+@Entity
 public class TipoIncidencia {
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Positive
     private int id;
+
     @NotBlank
     private String nombre;
 
@@ -16,6 +24,8 @@ public class TipoIncidencia {
         this.id = id;
         this.nombre = nombre;
     }
+
+    public TipoIncidencia() {}
 
     public int id() {
         return id;
