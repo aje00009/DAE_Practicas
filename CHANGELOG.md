@@ -35,4 +35,7 @@
 - Modificación de ``DaePracticaApplicationTests`` para el correcto funcionamiento del test gracias a la importación de la clase principal del proyecto (Carlos Mayor Navarro)
 
 ### ITERACIÓN 2
+
 - Modificación de archivos de configuración para persistencia JPA (Alberto Jiménez Expósito)
+- Modificación de las entidades ``Incidencia``, ``TipoIncidencia`` y ``Usuario`` para crear tablas de persistencia (María Ximena Galdames Fernandes)
+- Creación carpeta ``repositorios`` para las clases ``RepositorioIncidencias`` y ``RepositorioUsuarios`` (María Ximena Galdames Fernandes)
