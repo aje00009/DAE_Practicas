@@ -21,7 +21,7 @@ public class Incidencia {
     @NotNull
     private LocalDateTime fecha;
 
-    @Transient
+    @ManyToOne(fetch=FetchType.EAGER)
     @NotBlank
     private TipoIncidencia tipo;
 
@@ -31,7 +31,7 @@ public class Incidencia {
     @NotBlank
     private String localizacion;
 
-    @Transient
+    @Embedded
     @NotNull
     private CoordenadasGps coordenadas;
 

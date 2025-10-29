@@ -1,9 +1,11 @@
 package es.ujaen.dae.indicenciasurbanas.utils;
 
+import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Objects;
 
+@Embeddable
 public class CoordenadasGps {
 
     @NotBlank
@@ -15,6 +17,8 @@ public class CoordenadasGps {
         this.latitud = latitud;
         this.longitud = longitud;
     }
+
+    public CoordenadasGps() {}
 
     public float latitud() {
         return latitud;
