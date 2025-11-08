@@ -38,3 +38,4 @@
 
 - Modificación de las entidades ``Incidencia``, ``TipoIncidencia`` y ``Usuario`` para crear tablas de persistencia (María Ximena Galdames Fernandes)
 - Creación carpeta ``repositorios`` para las clases ``RepositorioIncidencias`` y ``RepositorioUsuarios`` (María Ximena Galdames Fernandes)
+- Creación de ``RepositorioTipoIncidencias`` (María Ximena Galdames Fernandes)
