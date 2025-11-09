@@ -6,6 +6,8 @@ import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ public class RepositorioIncidencias {
     @PersistenceContext
     EntityManager em;
 
+    @Cacheable(value = "incidenciasPorId", key = "#id")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Incidencia> buscarPorId(int id) {
         return Optional.ofNullable(em.find(Incidencia.class, id));
@@ -70,10 +73,12 @@ public class RepositorioIncidencias {
         em.persist(incidencia);
     }
 
+    @CacheEvict(value = "incidenciasPorId", key = "#incidencia.id()")
     public Incidencia actualizar(Incidencia incidencia) {
         return em.merge(incidencia);
     }
 
+    @CacheEvict(value = "incidenciasPorId", key = "#incidencia.id()")
     public void borrar(Incidencia incidencia) {
         em.remove(em.merge(incidencia));
     }
