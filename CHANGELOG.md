@@ -39,3 +39,5 @@
 - Modificación de archivos de configuración para persistencia JPA (Alberto Jiménez Expósito)
 - Modificación de las entidades ``Incidencia``, ``TipoIncidencia`` y ``Usuario`` para crear tablas de persistencia (María Ximena Galdames Fernandes)
 - Creación carpeta ``repositorios`` para las clases ``RepositorioIncidencias`` y ``RepositorioUsuarios`` (María Ximena Galdames Fernandes)
+- Creación de repositorio ``RepositorioTipoIncidencia`` (Alberto Jiménez Expósito)
+- - Creación de repositorio ``RepositorioUsuario`` (Alberto Jiménez Expósito)
