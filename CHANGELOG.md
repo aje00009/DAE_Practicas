@@ -41,3 +41,4 @@
 - Creación carpeta ``repositorios`` para las clases ``RepositorioIncidencias`` y ``RepositorioUsuarios`` (María Ximena Galdames Fernandes)
 - Creación de repositorio ``RepositorioTipoIncidencia`` (Alberto Jiménez Expósito)
 - - Creación de repositorio ``RepositorioUsuario`` (Alberto Jiménez Expósito)
+- Modificación del repositorio ``RepositorioIncidencias`` para su completo y correcto funcionamiento (Carlos Mayor Navarro)
