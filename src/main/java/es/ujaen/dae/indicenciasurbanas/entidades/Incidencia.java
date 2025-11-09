@@ -21,7 +21,7 @@ public class Incidencia {
     @NotNull
     private LocalDateTime fecha;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne
     @NotBlank
     private TipoIncidencia tipo;
 
@@ -35,6 +35,7 @@ public class Incidencia {
     @NotNull
     private CoordenadasGps coordenadas;
 
+    @Enumerated(EnumType.STRING)
     @NotNull
     private EstadoIncidencia estado;
 
@@ -44,6 +45,8 @@ public class Incidencia {
     @Email
     private String emailUsuario; //< Email del usuario que ha registrado la Incidencia
 
+    @Version
+    private int version;
 
     public Incidencia(Integer id, LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
                       float latitud, float longitud,  String dpto,  String emailUsuario) {
