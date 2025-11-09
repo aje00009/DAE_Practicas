@@ -20,8 +20,7 @@ public class TipoIncidencia {
     @NotBlank
     private String nombre;
 
-    public TipoIncidencia(int id, String nombre) {
-        this.id = id;
+    public TipoIncidencia(String nombre) {
         this.nombre = nombre;
     }
 

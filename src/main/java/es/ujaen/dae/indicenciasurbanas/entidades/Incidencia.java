@@ -48,9 +48,8 @@ public class Incidencia {
     @Version
     private int version;
 
-    public Incidencia(Integer id, LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
+    public Incidencia(LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
                       float latitud, float longitud,  String dpto,  String emailUsuario) {
-        this.id = id;
         this.fecha = fecha;
         this.tipo = tipo;
         this.descripcion = descripcion;

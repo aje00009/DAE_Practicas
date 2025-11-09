@@ -1,6 +1,9 @@
 package es.ujaen.dae.indicenciasurbanas.servicios;
 
 import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioIncidencias;
+import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioTipoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioUsuarios;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
@@ -10,7 +13,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
@@ -19,30 +24,25 @@ import java.util.*;
 
 @Service
 @Validated
+@Transactional
 public class ServicioIncidencia {
-    private List<TipoIncidencia> tipoIncidencia;
-    private Map<String, Usuario> usuarioMap;
-    private Map<Integer, Incidencia> incidenciaMap;
-    private static int nIncidencia= 1;
-    private static int nTipoIncidencia = 1;
+    @Autowired
+    private RepositorioUsuarios repositorioUsuarios;
+    @Autowired
+    private RepositorioIncidencias repositorioIncidencias;
+
+    @Autowired
+    private RepositorioTipoIncidencia repositorioTipoIncidencia;
 
     private final Usuario admin = new Usuario("administrador","administrador",
             LocalDate.of(1995,1,1),"-",661030462,"admin.dae@ujaen.es","admin");
 
-    public ServicioIncidencia() {
-        this.usuarioMap = new HashMap<>();
-        this.incidenciaMap = new HashMap<>();
-        tipoIncidencia = new ArrayList<>();
-
-        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Suciedad"));
-        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Rotura en parque"));
-        tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,"Rotura en mobiliario urbano"));
-    }
+    public ServicioIncidencia() { }
 
     /**
      * Registro de una nueva Incidencia en el sistema
      * @param fecha fecha de la Incidencia que va a ser registrada
-     * @param tipo tipo de la Incidencia que va se va a registrar
+     * @param tipoNombre tipo de la Incidencia que va se va a registrar
      * @param descripcion descripción de la Incidencia que se va a registrar
      * @param localizacion localización de la Incidencia que va a ser registrada
      * @param latitud coordenadas x del la localización de la incidencia que se va a registrar
@@ -51,13 +51,22 @@ public class ServicioIncidencia {
      * @param user Usuario que ha notificado de la incidencia que se va a registrar
      * return Devuelve el identificador de la incidencia creada
      */
-    public int nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipo, @NotBlank String descripcion, @NotBlank String localizacion,
+    public int nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipoNombre, @NotBlank String descripcion, @NotBlank String localizacion,
                                 @NotBlank float latitud,@NotBlank float longitud, @NotBlank String dpto, @Valid Usuario user) {
 
-        Incidencia nuevaIncidencia = new Incidencia(nIncidencia++,fecha, new TipoIncidencia(nTipoIncidencia++,tipo),
+        // Buscamos la entidad TipoIncidencia usando el repositorio.
+        // Esta consulta usará la caché "tiposPorNombre" que definiste.
+        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(tipoNombre)
+                .orElseThrow(TipoIncidenciaNoExiste::new); // Lanza la excepción si no se encuentra
+
+
+        Incidencia nuevaIncidencia = new Incidencia(fecha, tipo,
                 descripcion, localizacion, latitud, longitud, dpto, user.email());
 
-        incidenciaMap.put(nuevaIncidencia.id(), nuevaIncidencia);
+        // Guardamos la entidad con el repositorio
+        repositorioIncidencias.guardar(nuevaIncidencia);
+
+        // Devolvemos el ID real generado por la BBDD
         return nuevaIncidencia.id();
     }
 
@@ -67,13 +76,10 @@ public class ServicioIncidencia {
      * @throws UsuarioYaRegistrado En caso de que el Usuario a registrar ya esté en el sistema o se intente crear con el mismo email que el admin
      */
     public void nuevoUsuario(@Valid Usuario usuario) {
-        if(usuario.email().equals(admin.email()))
+        if(usuario.email().equals(admin.email())) //Si usuario tiene mismo email que el admin, registro denegado
             throw new UsuarioYaRegistrado();
 
-        Usuario u = usuarioMap.putIfAbsent(usuario.email(),usuario);
-        if( u!=null ) {
-            throw new UsuarioYaRegistrado();
-        }
+        repositorioUsuarios.guardar(usuario); //Persistimos el objeto en la BBDD
     }
 
     /**
@@ -82,12 +88,16 @@ public class ServicioIncidencia {
      * @param clave Contraseña asociada al usuario para hacer login
      * @return Un objeto Optional encapsulando a un objeto Usuario o vacío si no se ha encontrado al usuario
      */
+    @Transactional(readOnly = true) // Optimización para consultas
     public Optional<Usuario> login(@Email String email, @NotBlank String clave){
         if(email.equals(admin.email()) &&  clave.equals(admin.clave()))
             return Optional.of(admin);
 
-        Usuario u = usuarioMap.get(email);
-        return (u != null && u.clave().equals(clave)) ? Optional.of(u) : Optional.empty();
+        // Buscamos al usuario. Esta consulta usará la caché "usuarios".
+        Optional<Usuario> u = repositorioUsuarios.buscar(email);
+
+        // Comprobamos la clave
+        return u.filter(usuario -> usuario.clave().equals(clave));
     }
 
     /**
@@ -95,8 +105,9 @@ public class ServicioIncidencia {
      * @param usuario usuario logeado
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
+    @Transactional(readOnly = true)
     public List<Incidencia> obtenerListaIncidenciasUsuario(@Valid Usuario usuario){
-        return incidenciaMap.values().stream().filter(i -> i.emailUsuario().equals(usuario.email())).toList();
+        return repositorioIncidencias.buscarPorEmailUsuario(usuario.email());
     }
 
     /**
@@ -105,20 +116,19 @@ public class ServicioIncidencia {
      * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
      * @return Devuelve una lista con las incidencias que tienen los valores deseados
      */
-    public List<Incidencia> buscarIncidenciasTipoEstado(@NotNull TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia){
+    public List<Incidencia> buscarIncidenciasTipoEstado(TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia){
 
-        return incidenciaMap.values().stream()
-                .filter(incidencia -> {
 
-                    //Comprobación del tipo
-                    boolean tipoCoincide = (tipoIncidencia == null || incidencia.tipo().nombre().equalsIgnoreCase(tipoIncidencia.nombre()));
-
-                    //Comprobación del estado
-                    boolean estadoCoincide = (estadoIncidencia == null || incidencia.estado() == estadoIncidencia);
-
-                    return tipoCoincide && estadoCoincide;
-                })
-                .toList();
+        if (tipoIncidencia != null && estadoIncidencia != null) {
+            return repositorioIncidencias.buscarPorTipoYEstado(tipoIncidencia, estadoIncidencia);
+        }
+        if (tipoIncidencia != null) {
+            return repositorioIncidencias.buscarPorTipo(tipoIncidencia);
+        }
+        if (estadoIncidencia != null) {
+            return repositorioIncidencias.buscarPorEstado(estadoIncidencia);
+        }
+        return repositorioIncidencias.buscarTodas();
     }
 
     /**
@@ -127,24 +137,21 @@ public class ServicioIncidencia {
      * @param idIncidencia identificador de la incidencia que se elimina
      */
     public boolean borrarIncidencia(@Valid Usuario usuario, @Positive int idIncidencia){
-        // Primero buscamos si existe la incidencia (si no, lanzamos excepción)
-        Incidencia incidencia = incidenciaMap.get(idIncidencia);
-        if(incidencia == null) {
-            throw new IncidenciaNoExiste();
-        }
+        // 1. Buscamos la incidencia
+        Incidencia incidencia = repositorioIncidencias.buscarPorIdBloqueando(idIncidencia)
+                .orElseThrow(IncidenciaNoExiste::new);
 
-        // Condiciones para borrar
+        // 2. Comprobamos permisos (lógica original)
         boolean esAdmin = usuario.equals(admin);
         boolean esPropietario = incidencia.emailUsuario().equals(usuario.email());
         boolean estaPendiente = (incidencia.estado() == EstadoIncidencia.PENDIENTE);
 
-        // Se borra si cumple condiciones
+        // 3. Borramos si cumple
         if (esAdmin || (esPropietario && estaPendiente)) {
-            incidenciaMap.remove(idIncidencia);
+            repositorioIncidencias.borrar(incidencia);
             return true;
         }
 
-        // Si no se borró, se comunica al usuario
         return false;
     }
 
@@ -155,17 +162,17 @@ public class ServicioIncidencia {
      * @param idIncidencia Identificador de la incidencia a modificar
      */
     public void modificarEstadoIncidencia(@Valid Usuario usuario, EstadoIncidencia estadoIncidencia, @Positive int idIncidencia){
-        Incidencia incidencia = incidenciaMap.get(idIncidencia);
-
-        if(incidencia == null) {
-            throw new IncidenciaNoExiste();
-        }
+        // 1. Buscamos la incidencia
+        Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
+                .orElseThrow(IncidenciaNoExiste::new);
 
         if(!usuario.equals(admin)) {
             throw new AccionNoAutorizada();
         }
 
+        // 2. Modificamos la entidad en memoria (con el @Transactional ya se modifica en la BBDD al tenerlo linkeado dentro de la transacción)
         incidencia.estado(estadoIncidencia);
+
     }
 
     /**
@@ -178,13 +185,12 @@ public class ServicioIncidencia {
             throw new AccionNoAutorizada();
         }
 
-        for (TipoIncidencia tipo : this.tipoIncidencia) {
-            if(tipo.nombre().equals(tipoIncidencia)) {
-                throw new TipoIncidenciaExiste();
-            }
+        // Comprobamos si ya existe
+        if(repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia).isPresent()){
+            throw new TipoIncidenciaExiste();
         }
 
-        this.tipoIncidencia.add(new TipoIncidencia(nTipoIncidencia++,tipoIncidencia));
+        repositorioTipoIncidencia.guardar(new TipoIncidencia(tipoIncidencia));
     }
 
     /**
@@ -192,25 +198,20 @@ public class ServicioIncidencia {
      * @param usuario Identificador del usuario
      * @param tipoIncidencia tipo de Incidencia a borrar
      */
-    public void borrarTipoIncidencia(@Valid Usuario usuario, @NotBlank TipoIncidencia tipoIncidencia){
+    public void borrarTipoIncidencia(@Valid Usuario usuario, @NotNull TipoIncidencia tipoIncidencia){
         if(!usuario.equals(admin)) {
             throw new AccionNoAutorizada();
         }
 
-        if (!buscarIncidenciasTipoEstado(tipoIncidencia, null).isEmpty()) {
+
+        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia.nombre())
+                .orElseThrow(TipoIncidenciaNoExiste::new);
+
+        // Comprobamos si está en uso
+        if (!repositorioIncidencias.buscarPorTipo(tipo).isEmpty()) {
             throw new TipoIncidenciaEnUso();
         }
 
-        int enc = -1;
-        for (int i = 0; i < this.tipoIncidencia.size(); i++) {
-            if(this.tipoIncidencia.get(i).nombre().equals(tipoIncidencia.nombre())) {
-                enc = i;
-            }
-        }
-
-        if(enc==-1)
-            throw new TipoIncidenciaNoExiste();
-
-        this.tipoIncidencia.remove(enc);
+        repositorioTipoIncidencia.borrar(tipo);
     }
 }
