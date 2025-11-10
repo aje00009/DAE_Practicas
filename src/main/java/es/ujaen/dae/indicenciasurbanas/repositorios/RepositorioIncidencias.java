@@ -36,7 +36,7 @@ public class RepositorioIncidencias {
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Incidencia> buscarPorEmailUsuario(String email) {
-        return em.createQuery("SELECT i FROM Incidencia i WHERE i.emailUsuario = ?1", Incidencia.class)
+        return em.createQuery("SELECT i FROM Incidencia i WHERE i.usuario.email = ?1", Incidencia.class)
                 .setParameter(1, email)
                 .getResultList();
     }

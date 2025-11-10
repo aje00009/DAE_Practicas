@@ -14,7 +14,6 @@ import java.util.Objects;
 public class TipoIncidencia {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Positive
     private int id;
 
     @NotBlank

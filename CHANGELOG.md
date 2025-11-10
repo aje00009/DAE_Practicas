@@ -45,3 +45,5 @@
 - Modificación de ``ServicioIncidencia`` (Alberto Jiménez Expósito y Carlos Mayor Navarro)
 - Modificación en el constructor de ``Incidencia`` para eliminar el `id` al ser este autogenerado (Alberto Jiménez Expósito)
 - Modificación en el constructor de ``TipoIncidencia`` para eliminar el `id` al ser este autogenerado (Alberto Jiménez Expósito)
+- Cambios en los test (aún no funcionan todos) para adaptar los cambios de la práctica 2 (Todo el equipo)
+- Modificación de código para arreglar problemas referentes al issue de práctica 1 (Todo el equipo)

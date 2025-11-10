@@ -36,7 +36,7 @@ public class TestUsuario {
 
         assertThat(admin.clave()).isEqualTo("nUevAClav3_");
 
-        Usuario user = new Usuario("Alberto","Jiménez Expósito", LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        Usuario user = new Usuario("Alberto","Jiménez Expósito", LocalDate.now(),"Av. Arjona 10","+34673826467","aje00009@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user);
 
         Usuario user_loged = servicioIncidencia.login(user.email(),user.clave()).get();

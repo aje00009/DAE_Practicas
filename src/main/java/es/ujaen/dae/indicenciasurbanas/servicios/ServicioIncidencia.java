@@ -35,14 +35,14 @@ public class ServicioIncidencia {
     private RepositorioTipoIncidencia repositorioTipoIncidencia;
 
     private final Usuario admin = new Usuario("administrador","administrador",
-            LocalDate.of(1995,1,1),"-",661030462,"admin.dae@ujaen.es","admin");
+            LocalDate.of(1995,1,1),"-","+34661030462","admin.dae@ujaen.es","admin");
 
     public ServicioIncidencia() { }
 
     /**
      * Registro de una nueva Incidencia en el sistema
      * @param fecha fecha de la Incidencia que va a ser registrada
-     * @param tipoNombre tipo de la Incidencia que va se va a registrar
+     * @param tipo tipo de la Incidencia que va se va a registrar
      * @param descripcion descripción de la Incidencia que se va a registrar
      * @param localizacion localización de la Incidencia que va a ser registrada
      * @param latitud coordenadas x del la localización de la incidencia que se va a registrar
@@ -51,23 +51,16 @@ public class ServicioIncidencia {
      * @param user Usuario que ha notificado de la incidencia que se va a registrar
      * return Devuelve el identificador de la incidencia creada
      */
-    public int nuevaIncidencia(@NotNull LocalDateTime fecha, @NotBlank String tipoNombre, @NotBlank String descripcion, @NotBlank String localizacion,
+    public Incidencia nuevaIncidencia(@NotNull LocalDateTime fecha, @NotNull TipoIncidencia tipo, @NotBlank String descripcion, @NotBlank String localizacion,
                                 @NotBlank float latitud,@NotBlank float longitud, @NotBlank String dpto, @Valid Usuario user) {
-
-        // Buscamos la entidad TipoIncidencia usando el repositorio.
-        // Esta consulta usará la caché "tiposPorNombre" que definiste.
-        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(tipoNombre)
-                .orElseThrow(TipoIncidenciaNoExiste::new); // Lanza la excepción si no se encuentra
-
-
         Incidencia nuevaIncidencia = new Incidencia(fecha, tipo,
-                descripcion, localizacion, latitud, longitud, dpto, user.email());
+                descripcion, localizacion, latitud, longitud, dpto, user);
 
         // Guardamos la entidad con el repositorio
         repositorioIncidencias.guardar(nuevaIncidencia);
 
         // Devolvemos el ID real generado por la BBDD
-        return nuevaIncidencia.id();
+        return nuevaIncidencia;
     }
 
     /**
@@ -106,7 +99,7 @@ public class ServicioIncidencia {
      * @return Devuelve una lista con las incidencias generadas por el usuario con el login
      */
     @Transactional(readOnly = true)
-    public List<Incidencia> obtenerListaIncidenciasUsuario(@Valid Usuario usuario){
+    public List<Incidencia> obtenerListaIncidenciasUsuario(@NotNull Usuario usuario){
         return repositorioIncidencias.buscarPorEmailUsuario(usuario.email());
     }
 
@@ -134,16 +127,16 @@ public class ServicioIncidencia {
     /**
      * Eliminación de una incidencia registrada en el sistema
      * @param usuario usuario logeado
-     * @param idIncidencia identificador de la incidencia que se elimina
+     * @param incidenciaBorrar Incidencia que se quiere eliminar
      */
-    public boolean borrarIncidencia(@Valid Usuario usuario, @Positive int idIncidencia){
+    public boolean borrarIncidencia(@NotNull Usuario usuario, @NotNull Incidencia incidenciaBorrar){
         // 1. Buscamos la incidencia
-        Incidencia incidencia = repositorioIncidencias.buscarPorIdBloqueando(idIncidencia)
+        Incidencia incidencia = repositorioIncidencias.buscarPorIdBloqueando(incidenciaBorrar.id())
                 .orElseThrow(IncidenciaNoExiste::new);
 
         // 2. Comprobamos permisos (lógica original)
         boolean esAdmin = usuario.equals(admin);
-        boolean esPropietario = incidencia.emailUsuario().equals(usuario.email());
+        boolean esPropietario = incidencia.usuario().email().equals(usuario.email());
         boolean estaPendiente = (incidencia.estado() == EstadoIncidencia.PENDIENTE);
 
         // 3. Borramos si cumple
@@ -159,11 +152,11 @@ public class ServicioIncidencia {
      * Modificación del estado de una incidencia
      * @param usuario usuario logeado
      * @param estadoIncidencia Nuevo estado de la incidencia
-     * @param idIncidencia Identificador de la incidencia a modificar
+     * @param Incidencia Identificador de la incidencia a modificar
      */
-    public void modificarEstadoIncidencia(@Valid Usuario usuario, EstadoIncidencia estadoIncidencia, @Positive int idIncidencia){
+    public void modificarEstadoIncidencia(@NotNull Usuario usuario, EstadoIncidencia estadoIncidencia, @NotNull Incidencia Incidencia){
         // 1. Buscamos la incidencia
-        Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
+        Incidencia incidencia = repositorioIncidencias.buscarPorId(Incidencia.id())
                 .orElseThrow(IncidenciaNoExiste::new);
 
         if(!usuario.equals(admin)) {
@@ -180,7 +173,7 @@ public class ServicioIncidencia {
      * @param usuario usuario logeado
      * @param tipoIncidencia Tipo de incidencia a añadir
      */
-    public void crearTipoIncidencia(@Valid Usuario usuario, @NotBlank String tipoIncidencia){
+    public void crearTipoIncidencia(@NotNull Usuario usuario, @NotBlank String tipoIncidencia){
         if(!usuario.equals(admin)){
             throw new AccionNoAutorizada();
         }
@@ -198,7 +191,7 @@ public class ServicioIncidencia {
      * @param usuario Identificador del usuario
      * @param tipoIncidencia tipo de Incidencia a borrar
      */
-    public void borrarTipoIncidencia(@Valid Usuario usuario, @NotNull TipoIncidencia tipoIncidencia){
+    public void borrarTipoIncidencia(@NotNull Usuario usuario, @NotNull TipoIncidencia tipoIncidencia){
         if(!usuario.equals(admin)) {
             throw new AccionNoAutorizada();
         }
@@ -213,5 +206,17 @@ public class ServicioIncidencia {
         }
 
         repositorioTipoIncidencia.borrar(tipo);
+    }
+
+    /**
+     * Función que devuelve todos los tipos de incidencia registrados en el sistema
+     * @return Devuelve una lista con los tipos de incidencia
+     */
+    public List<TipoIncidencia> obtenerTiposIncidencia(){
+        return repositorioTipoIncidencia.buscarTodos();
+    }
+
+    public Optional<TipoIncidencia> obtenerTipoIncidencia(String tipoIncidencia){
+        return repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia);
     }
 }

@@ -3,6 +3,7 @@ package es.ujaen.dae.indicenciasurbanas.entidades;
 import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,14 +43,15 @@ public class Incidencia {
     @NotBlank
     private String dpto;// Departamento asignado
 
-    @Email
-    private String emailUsuario; //< Email del usuario que ha registrado la Incidencia
+    @ManyToOne
+    @Valid
+    private Usuario usuario; //< Usuario que ha registrado la incidencia
 
     @Version
     private int version;
 
     public Incidencia(LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
-                      float latitud, float longitud,  String dpto,  String emailUsuario) {
+                      float latitud, float longitud,  String dpto,  Usuario usuario) {
         this.fecha = fecha;
         this.tipo = tipo;
         this.descripcion = descripcion;
@@ -57,13 +59,13 @@ public class Incidencia {
         this.coordenadas = new CoordenadasGps(latitud,longitud);
         this.estado = EstadoIncidencia.PENDIENTE; // Asignamos por defecto el estado PENDIENTE al ser el primer estado por el que debe pasar una Incidencia
         this.dpto = dpto;
-        this.emailUsuario = emailUsuario;
+        this.usuario = usuario;
     }
 
     public Incidencia() {}
 
 
-    public Integer id() {
+    public int id() {
         return id;
     }
 
@@ -119,11 +121,11 @@ public class Incidencia {
         this.dpto = dpto;
     }
 
-    public String emailUsuario() {
-        return emailUsuario;
+    public Usuario usuario() {
+        return usuario;
     }
 
-    public void emailUsuario(String emailUsuario) {this.emailUsuario = emailUsuario; }
+    public void usuario(Usuario usuario) {this.usuario = usuario; }
 
     @Override
     public boolean equals(Object o) {
@@ -138,12 +140,12 @@ public class Incidencia {
                 Objects.equals(localizacion, u.localizacion) &&
                 Objects.equals(coordenadas, u.coordenadas)&&
                 Objects.equals(dpto, u.dpto) &&
-                Objects.equals(emailUsuario, u.emailUsuario);
+                Objects.equals(usuario, u.usuario);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fecha, tipo, descripcion, localizacion, coordenadas, dpto, emailUsuario);
+        return Objects.hash(fecha, tipo, descripcion, localizacion, coordenadas, dpto, usuario);
     }
 
 }

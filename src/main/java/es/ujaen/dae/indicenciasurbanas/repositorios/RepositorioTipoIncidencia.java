@@ -62,9 +62,6 @@ public class RepositorioTipoIncidencia {
      */
     @CacheEvict(value = "todosTipos", allEntries = true)
     public void guardar(TipoIncidencia tipoIncidencia) {
-        if (buscarPorNombre(tipoIncidencia.nombre()).isPresent()) {
-            throw new TipoIncidenciaEnUso();
-        }
         em.persist(tipoIncidencia);
     }
 
