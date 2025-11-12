@@ -60,7 +60,11 @@ public class RepositorioTipoIncidencia {
      * Al guardar, borramos la caché "todosTipos" porque la lista ha cambiado.
      * No borramos las otras, ya que es un elemento nuevo.
      */
-    @CacheEvict(value = "todosTipos", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "todosTipos", allEntries = true),
+            @CacheEvict(value = "tiposPorId", key = "#tipoIncidencia.id()"),
+            @CacheEvict(value = "tiposPorNombre", key = "#tipoIncidencia.nombre()")
+    })
     public void guardar(TipoIncidencia tipoIncidencia) {
         em.persist(tipoIncidencia);
     }

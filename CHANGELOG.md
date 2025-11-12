@@ -48,3 +48,4 @@
 - Cambios en los test (aún no funcionan todos) para adaptar los cambios de la práctica 2 (Todo el equipo)
 - Modificación de código para arreglar problemas referentes al issue de práctica 1 (Todo el equipo)
 - Modificación de testLogin() y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
+- Modificación de testObtenerIncidenciasUsuario y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)

@@ -16,14 +16,13 @@ import java.util.Objects;
 public class Incidencia {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Positive
     private int id;
 
     @NotNull
     private LocalDateTime fecha;
 
     @ManyToOne
-    @NotBlank
+    @NotNull
     private TipoIncidencia tipo;
 
     @NotBlank
@@ -130,22 +129,17 @@ public class Incidencia {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Incidencia u = (Incidencia) o;
 
-        // Dos Incidencias son iguales si todos sus atributos excepto el id son iguales
-        return Objects.equals(fecha, u.fecha) &&
-                Objects.equals(tipo, u.tipo) &&
-                Objects.equals(descripcion, u.descripcion) &&
-                Objects.equals(localizacion, u.localizacion) &&
-                Objects.equals(coordenadas, u.coordenadas)&&
-                Objects.equals(dpto, u.dpto) &&
-                Objects.equals(usuario, u.usuario);
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Incidencia that = (Incidencia) o;
+
+        return java.util.Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fecha, tipo, descripcion, localizacion, coordenadas, dpto, usuario);
+        // 5. El hashCode también debe basarse SOLO en el ID.
+        return java.util.Objects.hash(id);
     }
-
 }

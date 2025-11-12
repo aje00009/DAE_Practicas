@@ -71,7 +71,7 @@ public class TestServicioIncidencia {
         assertThat(resultado.get().email()).isEqualTo("email@gmail.com");
 
     }
-/*
+
     @Test
     @DirtiesContext
     public void testObtenerIncidenciasUsuario(){
@@ -89,10 +89,10 @@ public class TestServicioIncidencia {
 
         LocalDateTime fecha = LocalDateTime.now();
 
-        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10","+34673826467","aje00009@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user);
 
-        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10","+34673826467","cmn00019@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user1);
 
         Optional<Usuario> opt = servicioIncidencia.login(user.email(),user.clave());
@@ -116,7 +116,7 @@ public class TestServicioIncidencia {
 
         // Probar obtener lista de usuario sin incidencias
 
-        Usuario user2 = new Usuario("Ximena","Galmades",LocalDate.now(),"Av. Arjona 10",673826467,"xmnn10@red.ujaen.es","Passw0rD!");
+        Usuario user2 = new Usuario("Ximena","Galmades",LocalDate.now(),"Av. Arjona 10","+34673826467","xmnn10@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user2);
 
         Optional<Usuario> opt2 = servicioIncidencia.login(user2.email(),user2.clave());
@@ -125,7 +125,7 @@ public class TestServicioIncidencia {
 
     }
 
-    @Test
+    /*@Test
     @DirtiesContext
     public void testBuscarIncidencias(){
         Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");

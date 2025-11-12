@@ -52,7 +52,7 @@ public class ServicioIncidencia {
      * return Devuelve el identificador de la incidencia creada
      */
     public Incidencia nuevaIncidencia(@NotNull LocalDateTime fecha, @NotNull TipoIncidencia tipo, @NotBlank String descripcion, @NotBlank String localizacion,
-                                @NotBlank float latitud,@NotBlank float longitud, @NotBlank String dpto, @Valid Usuario user) {
+                                 float latitud, float longitud, @NotBlank String dpto, @Valid Usuario user) {
         Incidencia nuevaIncidencia = new Incidencia(fecha, tipo,
                 descripcion, localizacion, latitud, longitud, dpto, user);
 
