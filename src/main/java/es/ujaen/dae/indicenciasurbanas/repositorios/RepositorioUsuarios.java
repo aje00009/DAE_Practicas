@@ -23,7 +23,7 @@ public class RepositorioUsuarios {
      * El resultado se cachea en "usuarios" usando el email como clave.
      * Esto acelera muchísimo el login.
      */
-    @Cacheable(value = "usuarios", key = "#email")
+    @Cacheable(value = "usuarios", key = "#email", unless = "#result == null")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Usuario> buscar(String email) {
         return Optional.ofNullable(em.find(Usuario.class, email));
@@ -33,7 +33,7 @@ public class RepositorioUsuarios {
      * Al guardar un usuario nuevo, no necesitamos borrar nada de la caché,
      * ya que este usuario aún no estaba cacheado.
      */
-    @CacheEvict(value = "usuarios", key = "#usuario.email")
+    //@CacheEvict(value = "usuarios", key = "#usuario.email")
     public void guardar(Usuario usuario) {
         if (em.find(Usuario.class, usuario.email()) != null) {
             throw new UsuarioYaRegistrado();

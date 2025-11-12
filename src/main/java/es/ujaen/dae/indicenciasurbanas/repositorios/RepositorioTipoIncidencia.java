@@ -24,7 +24,7 @@ public class RepositorioTipoIncidencia {
      * Busca por ID. El resultado se cachea.
      * La caché se llama "tiposPorId" y la clave es el propio id.
      */
-    @Cacheable(value = "tiposPorId", key = "#id")
+    @Cacheable(value = "tiposPorId", key = "#id", unless = "#result == null")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<TipoIncidencia> buscarPorId(int id) {
         return Optional.ofNullable(em.find(TipoIncidencia.class, id));
@@ -34,7 +34,7 @@ public class RepositorioTipoIncidencia {
      * Busca por nombre. El resultado se cachea.
      * La caché se llama "tiposPorNombre" y la clave es el nombre.
      */
-    @Cacheable(value = "tiposPorNombre", key = "#nombre")
+    @Cacheable(value = "tiposPorNombre", key = "#nombre", unless = "#result == null")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<TipoIncidencia> buscarPorNombre(String nombre) {
         List<TipoIncidencia> resultados = em.createQuery(
@@ -60,11 +60,6 @@ public class RepositorioTipoIncidencia {
      * Al guardar, borramos la caché "todosTipos" porque la lista ha cambiado.
      * No borramos las otras, ya que es un elemento nuevo.
      */
-    @Caching(evict = {
-            @CacheEvict(value = "todosTipos", allEntries = true),
-            @CacheEvict(value = "tiposPorId", key = "#tipoIncidencia.id()"),
-            @CacheEvict(value = "tiposPorNombre", key = "#tipoIncidencia.nombre()")
-    })
     public void guardar(TipoIncidencia tipoIncidencia) {
         em.persist(tipoIncidencia);
     }

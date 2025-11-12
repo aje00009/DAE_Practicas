@@ -49,3 +49,4 @@
 - Modificación de código para arreglar problemas referentes al issue de práctica 1 (Todo el equipo)
 - Modificación de testLogin() y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
 - Modificación de testObtenerIncidenciasUsuario y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
+- Arreglo de cacheado para que no se incluyan en la caché resultados nulos u ``Optional`` vacíos (Carlos Mayor Navarro)

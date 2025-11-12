@@ -78,11 +78,11 @@ public class TestServicioIncidencia {
         // Probar que se obtiene la lista de incidencias del usuario correcto
         Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");
 
-                servicioIncidencia.crearTipoIncidencia(resultado.get(),"tipo1");
-                TipoIncidencia tipo1 = servicioIncidencia.obtenerTipoIncidencia("tipo1").get();
+        servicioIncidencia.crearTipoIncidencia(resultado.get(),"tipo1");
+        TipoIncidencia tipo1 = servicioIncidencia.obtenerTipoIncidencia("tipo1").get();
 
-                servicioIncidencia.crearTipoIncidencia(resultado.get(),"tipo2");
-                TipoIncidencia tipo2 = servicioIncidencia.obtenerTipoIncidencia("tipo2").get();
+        servicioIncidencia.crearTipoIncidencia(resultado.get(),"tipo2");
+        TipoIncidencia tipo2 = servicioIncidencia.obtenerTipoIncidencia("tipo2").get();
 
         servicioIncidencia.crearTipoIncidencia(resultado.get(),"tipo3");
         TipoIncidencia tipo3 = servicioIncidencia.obtenerTipoIncidencia("tipo3").get();
