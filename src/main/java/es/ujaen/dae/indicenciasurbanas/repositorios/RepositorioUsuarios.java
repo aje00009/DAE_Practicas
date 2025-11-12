@@ -33,6 +33,7 @@ public class RepositorioUsuarios {
      * Al guardar un usuario nuevo, no necesitamos borrar nada de la caché,
      * ya que este usuario aún no estaba cacheado.
      */
+    @CacheEvict(value = "usuarios", key = "#usuario.email")
     public void guardar(Usuario usuario) {
         if (em.find(Usuario.class, usuario.email()) != null) {
             throw new UsuarioYaRegistrado();
