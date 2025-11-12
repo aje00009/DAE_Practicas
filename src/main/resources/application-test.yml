@@ -1,3 +1,6 @@
 spring.datasource.url: jdbc:h2:mem:incidencias;MODE=MYSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
 
+spring.h2.console.enabled: true
+spring.h2.console.path: /h2-console
+
 spring.jpa.properties.jakarta.persistence.schema-generation.database.action: drop-and-create

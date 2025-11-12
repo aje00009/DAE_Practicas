@@ -6,6 +6,7 @@ import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
 import es.ujaen.dae.indicenciasurbanas.excepciones.*;
 import es.ujaen.dae.indicenciasurbanas.servicios.ServicioIncidencia;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,10 @@ public class TestServicioIncidencia {
     @Autowired
     ServicioIncidencia servicioIncidencia;
 
-    @Test
+    @Autowired
+    EntityManager em;
+
+    /*@Test
     @DirtiesContext
     public void testNuevoUsuario() {
 
@@ -44,9 +48,9 @@ public class TestServicioIncidencia {
                 LocalDate.of(1995, 1, 1), "-", "+34661030462", "admin.dae@ujaen.es", "admin");
         assertThatThrownBy(() -> servicioIncidencia.nuevoUsuario(admin)).isInstanceOf(UsuarioYaRegistrado.class);
 
-    }
+    }*/
 
-    /*@Test
+    @Test
     @DirtiesContext
     public void testLogin(){
         //Obtener admin
@@ -60,14 +64,14 @@ public class TestServicioIncidencia {
 
         //Obtener usuario que existe
         LocalDate fecha = LocalDate.of(2000, 1, 1);
-        Usuario usuario=new Usuario("nombre", "apellido", fecha, "direccion", 777123456, "email@gmail.com", "clave");
+        Usuario usuario=new Usuario("nombre", "apellido", fecha, "direccion", "+34777123456", "email@gmail.com", "clave");
         servicioIncidencia.nuevoUsuario(usuario);
-        resultado = servicioIncidencia.login("email@gmail.com", "clave");
+        resultado = servicioIncidencia.login(usuario.email(), usuario.clave());
         assertThat(resultado).isPresent();
         assertThat(resultado.get().email()).isEqualTo("email@gmail.com");
 
     }
-
+/*
     @Test
     @DirtiesContext
     public void testObtenerIncidenciasUsuario(){
