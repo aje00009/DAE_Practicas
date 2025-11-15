@@ -50,3 +50,5 @@
 - Modificación de testLogin() y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
 - Modificación de testObtenerIncidenciasUsuario y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
 - Arreglo de cacheado para que no se incluyan en la caché resultados nulos u ``Optional`` vacíos (Carlos Mayor Navarro)
+- Modificacion de testBorrarIncidencia y testBuscarIncidencias para el funcionamiento de los tests (Carlos Mayor Navarro)
+- Modificacion de la clase y RepositorioIncidencias para el correcto funcionamiento de los tests (Carlos Mayor Navarro)

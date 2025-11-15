@@ -125,7 +125,7 @@ public class TestServicioIncidencia {
 
     }
 
-    /*@Test
+    @Test
     @DirtiesContext
     public void testBuscarIncidencias(){
         Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");
@@ -141,10 +141,10 @@ public class TestServicioIncidencia {
 
         LocalDateTime fecha = LocalDateTime.now();
 
-        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        Usuario user = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10","+34673826467","aje00009@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user);
 
-        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        Usuario user1 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10","+34673826467","cmn00019@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user1);
 
         Optional<Usuario> opt = servicioIncidencia.login(user.email(),user.clave());
@@ -195,12 +195,12 @@ public class TestServicioIncidencia {
 
         LocalDateTime fecha = LocalDateTime.now();
 
-        Usuario usuario1 = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10",673826467,"aje00009@red.ujaen.es","Passw0rD!");
+        Usuario usuario1 = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10","+34673826467","aje00009@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(usuario1);
 
         Optional<Usuario> user1=servicioIncidencia.login(usuario1.email(), usuario1.clave());
 
-        Usuario usuario2 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10",673826467,"cmn00019@red.ujaen.es","Passw0rD!");
+        Usuario usuario2 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10","+34673826467","cmn00019@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(usuario2);
 
         Optional<Usuario> user2=servicioIncidencia.login(usuario2.email(), usuario2.clave());
@@ -222,7 +222,7 @@ public class TestServicioIncidencia {
         assertThat(servicioIncidencia.borrarIncidencia(resultado.get(),incidencia2)).isEqualTo(true);
 
     }
-
+/*
     @Test
     @DirtiesContext
     public void testModificarEstadoIncidencia(){
