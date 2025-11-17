@@ -4,6 +4,8 @@ import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioIncidencias;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioTipoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioUsuarios;
+import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
+import es.ujaen.dae.indicenciasurbanas.utils.DistanciaCoordenadas;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
@@ -12,7 +14,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,14 +53,28 @@ public class ServicioIncidencia {
      * return Devuelve el identificador de la incidencia creada
      */
     public Incidencia nuevaIncidencia(@NotNull LocalDateTime fecha, @NotNull TipoIncidencia tipo, @NotBlank String descripcion, @NotBlank String localizacion,
-                                 float latitud, float longitud, @NotBlank String dpto, @Valid Usuario user) {
+                                 float latitud, float longitud, @NotBlank String dpto, @Valid Usuario user, byte[] foto) {
+
+        CoordenadasGps coordenadasNuevaIncidencia = new CoordenadasGps(latitud,longitud);
+
+        List<Incidencia> incidenciasRegistradas;
+        incidenciasRegistradas = repositorioIncidencias.buscarPorEstado(EstadoIncidencia.PENDIENTE);
+        incidenciasRegistradas.addAll(repositorioIncidencias.buscarPorEstado(EstadoIncidencia.EN_EVALUACION));
+
+        for (Incidencia incidencia : incidenciasRegistradas) {
+            double distancia = DistanciaCoordenadas.calcularDistanciaMetros(coordenadasNuevaIncidencia, incidencia.coordenadas());
+            if(distancia<10){
+                throw new IncidenciaEnCurso();
+            }
+        }
+
         Incidencia nuevaIncidencia = new Incidencia(fecha, tipo,
-                descripcion, localizacion, latitud, longitud, dpto, user);
+                descripcion, localizacion, latitud, longitud, dpto, user, foto);
 
         // Guardamos la entidad con el repositorio
         repositorioIncidencias.guardar(nuevaIncidencia);
 
-        // Devolvemos el ID real generado por la BBDD
+        // Devolvemos la nueva incidencia (o null si no ha podido ser creada al estar repetida)
         return nuevaIncidencia;
     }
 
@@ -174,7 +189,7 @@ public class ServicioIncidencia {
      * @param tipoIncidencia Tipo de incidencia a añadir
      */
     public void crearTipoIncidencia(@NotNull Usuario usuario, @NotBlank String tipoIncidencia){
-        if(!usuario.equals(admin)){
+        if(!usuario.email().equals(admin.email())){
             throw new AccionNoAutorizada();
         }
 
@@ -216,6 +231,11 @@ public class ServicioIncidencia {
         return repositorioTipoIncidencia.buscarTodos();
     }
 
+    /**
+     * Función que devuelve un tipo de incidencia según su nombre
+     * @param tipoIncidencia Nombre del tipo de incidencia a devolver
+     * @return Devuelve un Optional encaspsulando el TipoIncidencia (o vacío si no existe)
+     */
     public Optional<TipoIncidencia> obtenerTipoIncidencia(String tipoIncidencia){
         return repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia);
     }

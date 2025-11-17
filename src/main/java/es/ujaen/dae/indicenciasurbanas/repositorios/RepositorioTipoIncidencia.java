@@ -1,7 +1,6 @@
 package es.ujaen.dae.indicenciasurbanas.repositorios;
 
 import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
-import es.ujaen.dae.indicenciasurbanas.excepciones.TipoIncidenciaEnUso;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -49,7 +48,7 @@ public class RepositorioTipoIncidencia {
      * Busca todos. El resultado se cachea.
      * La caché se llama "todosTipos" y guarda la lista completa.
      */
-    @Cacheable(value = "todosTipos", unless = "#result == null")
+    @Cacheable(value = "todosTipos", unless = "#result == null || #result.isEmpty()")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<TipoIncidencia> buscarTodos() {
         return em.createQuery("SELECT t FROM TipoIncidencia t", TipoIncidencia.class)

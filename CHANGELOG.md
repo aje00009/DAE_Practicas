@@ -52,3 +52,6 @@
 - Arreglo de cacheado para que no se incluyan en la caché resultados nulos u ``Optional`` vacíos (Carlos Mayor Navarro)
 - Modificacion de testBorrarIncidencia y testBuscarIncidencias para el funcionamiento de los tests (Carlos Mayor Navarro)
 - Modificacion de la clase y RepositorioIncidencias para el correcto funcionamiento de los tests (Carlos Mayor Navarro)
+- Adición de ``testObtenerTipoIncidencia`` para comprobar el correcto funcionamiento del método `obtenerTipoIncidencia()` (Alberto Jiménez Expósito)
+- Creación de la clase ``DistanciaCoordenadas`` en utils para calcular la distancia en metros entre dos coordenadas GPS (María Ximena Galdames Fernandes)
+- Modificación general de código para que funcionen correctamente los test (Alberto Jiménez Expósito)

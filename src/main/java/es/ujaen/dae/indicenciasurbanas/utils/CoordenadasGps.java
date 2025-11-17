@@ -1,7 +1,6 @@
 package es.ujaen.dae.indicenciasurbanas.utils;
 
 import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
