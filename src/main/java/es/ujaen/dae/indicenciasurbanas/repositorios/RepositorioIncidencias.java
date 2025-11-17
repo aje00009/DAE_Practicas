@@ -46,7 +46,7 @@ public class RepositorioIncidencias {
      * Busca por email del usuario. El resultado se cachea.
      * La caché se llama "incidenciasPorEmail" y la clave es el email.
      */
-    @Cacheable(value = "incidenciasPorEmail", key = "#email", unless = "#result == null")
+    @Cacheable(value = "incidenciasPorEmail", key = "#email", unless = "#result == null || #result.isEmpty()")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Incidencia> buscarPorEmailUsuario(String email) {
         return em.createQuery("SELECT i FROM Incidencia i WHERE i.usuario.email = ?1", Incidencia.class)
@@ -58,7 +58,6 @@ public class RepositorioIncidencias {
      * Busca por tipo. El resultado se cachea.
      * La caché se llama "incidenciasPorTipo" y la clave es el objeto TipoIncidencia.
      */
-    @Cacheable(value = "incidenciasPorTipo", key = "#tipo", unless = "#result == null")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Incidencia> buscarPorTipo(TipoIncidencia tipo) {
         return em.createQuery("SELECT i FROM Incidencia i WHERE i.tipo = ?1", Incidencia.class)
@@ -70,7 +69,6 @@ public class RepositorioIncidencias {
      * Busca por estado. El resultado se cachea.
      * La caché se llama "incidenciasPorEstado" y la clave es el Enum EstadoIncidencia.
      */
-    @Cacheable(value = "incidenciasPorEstado", key = "#estado", unless = "#result == null")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Incidencia> buscarPorEstado(EstadoIncidencia estado) {
         return em.createQuery("SELECT i FROM Incidencia i WHERE i.estado = ?1", Incidencia.class)
@@ -82,7 +80,6 @@ public class RepositorioIncidencias {
      * Busca por tipo y estado. El resultado se cachea.
      * La caché se llama "incidenciasPorTipoYEstado" y la clave es una combinación de tipo y estado.
      */
-    @Cacheable(value = "incidenciasPorTipoYEstado", key = "{#tipo, #estado}", unless = "#result == null")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Incidencia> buscarPorTipoYEstado(TipoIncidencia tipo, EstadoIncidencia estado) {
         return em.createQuery("SELECT i FROM Incidencia i WHERE i.tipo = ?1 AND i.estado = ?2", Incidencia.class)
@@ -95,7 +92,7 @@ public class RepositorioIncidencias {
      * Busca todas. El resultado se cachea.
      * La caché se llama "todasIncidencias".
      */
-    @Cacheable(value = "todasIncidencias", unless = "#result == null")
+    @Cacheable(value = "todasIncidencias", unless = "#result == null || #result.isEmpty()")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Incidencia> buscarTodas() {
         return em.createQuery("SELECT i FROM Incidencia i", Incidencia.class)

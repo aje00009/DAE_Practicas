@@ -49,7 +49,7 @@ public class RepositorioTipoIncidencia {
      * Busca todos. El resultado se cachea.
      * La caché se llama "todosTipos" y guarda la lista completa.
      */
-    @Cacheable(value = "todosTipos", unless = "#result == null")
+    @Cacheable(value = "todosTipos", unless = "#result == null || #result.isEmpty()")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<TipoIncidencia> buscarTodos() {
         return em.createQuery("SELECT t FROM TipoIncidencia t", TipoIncidencia.class)

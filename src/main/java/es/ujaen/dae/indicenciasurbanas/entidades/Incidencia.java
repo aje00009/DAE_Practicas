@@ -46,11 +46,22 @@ public class Incidencia {
     @Valid
     private Usuario usuario; //< Usuario que ha registrado la incidencia
 
+    /**
+     * @Lob indica que es un "Large Object", lo que será en la BBDD un BLOB (Binary Large Object)
+     * @Basic(fetch=FetchType.LAZY) Usamos carga perezosa para que la imagen no se cargue en memoria al cargar la incidencia
+     * No se llama hasta que se llame a la función para cargar la imagen. Si no, colapsaría la aplicación con todas
+     * las imágenes de todas las incidencias
+     * Se podría almacenar también una ruta en la BBDD y recuperarla en el servidor (que aloja las imágenes en disco duro)
+     */
+    @Lob
+    @Basic(fetch=FetchType.LAZY)
+    private byte[] imagen;
+
     @Version
     private int version;
 
     public Incidencia(LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
-                      float latitud, float longitud,  String dpto,  Usuario usuario) {
+                      float latitud, float longitud,  String dpto,  Usuario usuario, byte[] imagen) {
         this.fecha = fecha;
         this.tipo = tipo;
         this.descripcion = descripcion;
@@ -59,6 +70,7 @@ public class Incidencia {
         this.estado = EstadoIncidencia.PENDIENTE; // Asignamos por defecto el estado PENDIENTE al ser el primer estado por el que debe pasar una Incidencia
         this.dpto = dpto;
         this.usuario = usuario;
+        this.imagen = imagen;
     }
 
     public Incidencia() {}
@@ -125,6 +137,14 @@ public class Incidencia {
     }
 
     public void usuario(Usuario usuario) {this.usuario = usuario; }
+
+    public byte[] imagen() {
+        return imagen;
+    }
+
+    public void imagen(byte[] imagen) {
+        this.imagen = imagen;
+    }
 
     @Override
     public boolean equals(Object o) {
