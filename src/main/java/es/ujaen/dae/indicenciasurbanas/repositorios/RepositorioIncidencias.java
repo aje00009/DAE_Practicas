@@ -106,8 +106,6 @@ public class RepositorioIncidencias {
      * Guarda una incidencia.
      * Evicta (limpia) todos los cachés de listas, ya que su contenido ha cambiado.
      */
-    @CacheEvict(value = {"todasIncidencias", "incidenciasPorEmail", "incidenciasPorTipo", "incidenciasPorEstado", "incidenciasPorTipoYEstado"},
-            allEntries = true)
     public void guardar(Incidencia incidencia) {
         em.persist(incidencia);
     }
