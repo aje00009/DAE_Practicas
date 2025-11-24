@@ -48,7 +48,6 @@ public class TestServicioIncidencia {
         assertThatThrownBy(() -> servicioIncidencia.nuevoUsuario(admin)).isInstanceOf(UsuarioYaRegistrado.class);
 
     }
-
     @Test
     @DirtiesContext
     public void testLogin(){
