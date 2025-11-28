@@ -33,3 +33,4 @@
 - Actualización diagrama UML (María Ximena Galdames Fernandes)
 - Modificación de parámetro tipo de incidencia en `ServicioIncidencia` de un `String` a un objeto `TipoIncidencia` (Alberto Jiménez Expósito)
 - Modificación de ``DaePracticaApplicationTests`` para el correcto funcionamiento del test gracias a la importación de la clase principal del proyecto (Carlos Mayor Navarro)
+- Creación de DTO de entidades (Alberto Jiménez Expósito y Carlos Mayor Navarro)
