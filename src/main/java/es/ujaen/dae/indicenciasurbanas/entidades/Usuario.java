@@ -1,12 +1,16 @@
 package es.ujaen.dae.indicenciasurbanas.entidades;
 
 import es.ujaen.dae.indicenciasurbanas.excepciones.AccionNoAutorizada;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 
+@Entity
 public class Usuario {
 
     @NotBlank
@@ -15,15 +19,16 @@ public class Usuario {
     @NotBlank
     private String apellido;
 
-    @NotBlank
+    @NotNull
     private LocalDate fNacimiento;
 
     @NotBlank
     private String direccion;
 
     @Pattern(regexp = "^(\\+34|0034|34)?[6789]\\d{8}$", message = "No es un número de teléfono válido")
-    private Integer telefono;
+    private String telefono;
 
+    @Id
     @Email
     private String email;
 
@@ -31,7 +36,7 @@ public class Usuario {
     private String clave;
 
     public Usuario(String nombre, String apellido, LocalDate fNac,
-           String direccion, Integer telefono, String email, String clave) {
+           String direccion, String telefono, String email, String clave) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.fNacimiento = fNac;
@@ -40,6 +45,8 @@ public class Usuario {
         this.email = email;
         this.clave = clave;
     }
+
+    public Usuario() {}
 
     public void nombre(String nombre){
         this.nombre = nombre;
@@ -73,11 +80,11 @@ public class Usuario {
         return this.direccion;
     }
 
-    public void telefono(Integer telefono){
+    public void telefono(String telefono){
         this.telefono = telefono;
     }
 
-    public Integer telefono(){
+    public String telefono(){
         return this.telefono;
     }
 

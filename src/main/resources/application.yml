@@ -1,0 +1,6 @@
+  spring.datasource.url: jdbc:mysql://localhost:3306/incidencias
+  spring.datasource.username: incidencias_usr
+  spring.datasource.password: secret
+
+  spring.jpa.properties.jakarta.persistence.schema-generation.database.action: none
+

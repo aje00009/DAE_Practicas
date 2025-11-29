@@ -33,4 +33,29 @@
 - Actualización diagrama UML (María Ximena Galdames Fernandes)
 - Modificación de parámetro tipo de incidencia en `ServicioIncidencia` de un `String` a un objeto `TipoIncidencia` (Alberto Jiménez Expósito)
 - Modificación de ``DaePracticaApplicationTests`` para el correcto funcionamiento del test gracias a la importación de la clase principal del proyecto (Carlos Mayor Navarro)
+
+### ITERACIÓN 2
+
+- Modificación de archivos de configuración para persistencia JPA (Alberto Jiménez Expósito)
+- Modificación de las entidades ``Incidencia``, ``TipoIncidencia`` y ``Usuario`` para crear tablas de persistencia (María Ximena Galdames Fernandes)
+- Creación carpeta ``repositorios`` para las clases ``RepositorioIncidencias`` y ``RepositorioUsuarios`` (María Ximena Galdames Fernandes)
+- Creación de repositorio ``RepositorioTipoIncidencia`` (Alberto Jiménez Expósito)
+- Creación de repositorio ``RepositorioUsuario`` (Alberto Jiménez Expósito)
+- Modificación del repositorio ``RepositorioIncidencias`` para su completo y correcto funcionamiento (Carlos Mayor Navarro)
+- Modificación de ``ServicioIncidencia`` (Alberto Jiménez Expósito y Carlos Mayor Navarro)
+- Modificación en el constructor de ``Incidencia`` para eliminar el `id` al ser este autogenerado (Alberto Jiménez Expósito)
+- Modificación en el constructor de ``TipoIncidencia`` para eliminar el `id` al ser este autogenerado (Alberto Jiménez Expósito)
+- Cambios en los test (aún no funcionan todos) para adaptar los cambios de la práctica 2 (Todo el equipo)
+- Modificación de código para arreglar problemas referentes al issue de práctica 1 (Todo el equipo)
+- Modificación de testLogin() y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
+- Modificación de testObtenerIncidenciasUsuario y componentes relacionados para que funcione correctamente (Alberto Jiménez Expósito)
+- Arreglo de cacheado para que no se incluyan en la caché resultados nulos u ``Optional`` vacíos (Carlos Mayor Navarro)
+- Modificacion de testBorrarIncidencia y testBuscarIncidencias para el funcionamiento de los tests (Carlos Mayor Navarro)
+- Modificacion de la clase y RepositorioIncidencias para el correcto funcionamiento de los tests (Carlos Mayor Navarro)
+- Adición de ``testObtenerTipoIncidencia`` para comprobar el correcto funcionamiento del método `obtenerTipoIncidencia()` (Alberto Jiménez Expósito)
+- Creación de la clase ``DistanciaCoordenadas`` en utils para calcular la distancia en metros entre dos coordenadas GPS (María Ximena Galdames Fernandes)
+- Modificación general de código para que funcionen correctamente los test (Alberto Jiménez Expósito)
+
+### ITERACIÓN 3
+
 - Creación de DTO de entidades (Alberto Jiménez Expósito y Carlos Mayor Navarro)
