@@ -59,3 +59,4 @@
 ### ITERACIÓN 3
 
 - Creación de DTO de entidades (Alberto Jiménez Expósito y Carlos Mayor Navarro)
+- Creación de ``Mapeador`` para la manejar la correspondencia entre entidades y sus DTO (María Ximena Galdames Fernandes)
