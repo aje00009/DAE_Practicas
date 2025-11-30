@@ -3,10 +3,13 @@ package es.ujaen.dae.indicenciasurbanas.rest.dto;
 import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import es.ujaen.dae.indicenciasurbanas.excepciones.TipoIncidenciaNoExiste;
+import es.ujaen.dae.indicenciasurbanas.excepciones.UsuarioNoExiste;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioTipoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioUsuarios;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class Mapeador {
@@ -62,10 +65,12 @@ public class Mapeador {
 
     public Incidencia entidad(DIncidencia dIncidencia){
         // Buscamos el usuario y tipo de incidencia en la BBDD
-        Usuario usuario = repositorioUsuarios.buscar(dIncidencia.emailUsuario()).get();
+        Usuario usuario = repositorioUsuarios.buscar(dIncidencia.emailUsuario())
+                .orElseThrow(UsuarioNoExiste::new);
 
-        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(dIncidencia.tipo()).get();
-        
+        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(dIncidencia.tipo())
+                .orElseThrow(TipoIncidenciaNoExiste::new);
+
         return new Incidencia(dIncidencia.fecha(),
                 tipo,
                 dIncidencia.descripcion(),
