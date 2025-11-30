@@ -62,3 +62,5 @@
 - Creación de ``Mapeador`` para la manejar la correspondencia entre entidades y sus DTO (María Ximena Galdames Fernandes)
 - Modificacion ``Mapeador`` para manejar las excepciones que pueden llegar a ocurrir al buscar un usuario y un TipodeIncidencia en el metodo entidad(Dincidencia dincidencia) (Carlos Mayor Navarro)
 - Creacion de un nueva excepcion ``UsuarioNoexiste`` para manejar la excepcion de un usuario no existente en el sistema (Carlos Mayor Navarro)
+- Creación y adaptación de ``ControladorIncidencias``, siendo este un controlador REST que recibirá peticiones para interactuar con el back-end (Alberto Jiménez Expósito y Carlos Mayor Navarro)
+- Modificación de ``ServicioIncidencia`` para adaptarlo a la creación del API REST (Alberto Jiménez Expósito y Carlos Mayor Navarro)

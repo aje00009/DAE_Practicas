@@ -71,22 +71,15 @@ public class ControladorIncidencias {
 
     @GetMapping("/usuarios/{email}")
     public ResponseEntity<DUsuario> obtenerUsuario(@PathVariable String email) {
-        // Nota: Como no tenemos "buscarUsuario" público en el servicio (solo login),
-        // asumimos que puedes añadir un "verUsuario" simple o usar el login temporalmente
-        // pero lo ideal para REST es un buscar. Aquí uso login como "hack" temporal si no has creado el buscar.
-        // Lo CORRECTO sería exponer 'buscarUsuario' en el servicio.
-        var usuario = servicioIncidencia.login(email, "admin"); // Esto fallará sin clave, necesitas exponer buscar(email) en ServicioIncidencia
-
-        return usuario.map(u -> ResponseEntity.ok(mapeador.dto(u)))
+        return servicioIncidencia.obtenerUsuario(email)
+                .map(u -> ResponseEntity.ok(mapeador.dto(u)))
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    // --- Endpoints Incidencias ---
 
     @PostMapping
     public ResponseEntity<DIncidencia> crearIncidencia(@RequestBody DIncidencia dIncidencia) {
         Incidencia nueva = mapeador.entidad(dIncidencia);
-        // Al reconstruir, ya hemos buscado el Usuario en BBDD dentro del Mapeador
+
         Incidencia creada = servicioIncidencia.nuevaIncidencia(
                 nueva.fecha(), nueva.tipo(), nueva.descripcion(), nueva.localizacion(),
                 nueva.coordenadas().latitud(), nueva.coordenadas().longitud(),
@@ -97,33 +90,19 @@ public class ControladorIncidencias {
 
     @GetMapping("/{id}")
     public ResponseEntity<DIncidencia> obtenerIncidencia(@PathVariable int id) {
-        // Necesitas exponer buscarPorId en tu ServicioIncidencia, si no está público, añádelo.
-        // Usaré repositorio indirectamente a través de una llamada hipotética al servicio
-        // O asumo que añades 'obtenerIncidencia(int id)' al servicio.
-        // Por ahora simulado:
-        try {
-            // servicioIncidencia.buscarIncidencia(id)...
-            // Si no tienes el método en el servicio, debes crearlo.
-            // Supongamos que lo añades.
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Incidencia incidencia = servicioIncidencia.buscarIncidencia(id);
+        return ResponseEntity.ok(mapeador.dto(incidencia));
     }
 
-    /**
-     * Búsqueda filtrada. El profesor dijo: "Query params solo para filtrado".
-     */
+
     @GetMapping
     public ResponseEntity<List<DIncidencia>> buscarIncidencias(
             @RequestParam(required = false) String nombreTipo,
             @RequestParam(required = false) EstadoIncidencia estado) {
 
-        // Mapeo manual de strings a objetos necesarios para el servicio
         TipoIncidencia tipoObj = null;
         if(nombreTipo != null) {
             tipoObj = servicioIncidencia.obtenerTipoIncidencia(nombreTipo).orElse(null);
-            // Si piden un tipo que no existe, devolvemos lista vacía o error 404, decisión de diseño.
             if(tipoObj == null) return ResponseEntity.ok(List.of());
         }
 
@@ -137,7 +116,6 @@ public class ControladorIncidencias {
         return ResponseEntity.ok().build();
     }
 
-    // --- Endpoints Tipos de Incidencia ---
 
     @GetMapping("/tipos")
     public ResponseEntity<List<DTipoIncidencia>> listarTipos() {
@@ -151,14 +129,11 @@ public class ControladorIncidencias {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+
+
     @DeleteMapping("/tipos/{nombre}")
     public ResponseEntity<Void> borrarTipo(@PathVariable String nombre) {
-        // Adaptación: el servicio espera objeto, pero REST recibe ID/Nombre.
-        // Buscamos primero para pasar el objeto al servicio (o modificamos servicio para aceptar string).
-        TipoIncidencia tipo = servicioIncidencia.obtenerTipoIncidencia(nombre)
-                .orElseThrow(TipoIncidenciaNoExiste::new);
-
-        servicioIncidencia.borrarTipoIncidencia(null, tipo); // Ojo: null porque quitamos usuario
+        servicioIncidencia.borrarTipoIncidencia(nombre);
         return ResponseEntity.ok().build();
     }
 }
