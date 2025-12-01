@@ -64,3 +64,4 @@
 - Creacion de un nueva excepcion ``UsuarioNoexiste`` para manejar la excepcion de un usuario no existente en el sistema (Carlos Mayor Navarro)
 - Creación y adaptación de ``ControladorIncidencias``, siendo este un controlador REST que recibirá peticiones para interactuar con el back-end (Alberto Jiménez Expósito y Carlos Mayor Navarro)
 - Modificación de ``ServicioIncidencia`` para adaptarlo a la creación del API REST (Alberto Jiménez Expósito y Carlos Mayor Navarro)
+- Modificación ``ServicioIncidencia`` para eliminar la propiedad transactional de la clase (María Ximena Galdames Fernandes)

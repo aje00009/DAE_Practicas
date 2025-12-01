@@ -26,7 +26,6 @@ import java.util.Optional;
 
 @Service
 @Validated
-@Transactional
 public class ServicioIncidencia {
     @Autowired
     private RepositorioUsuarios repositorioUsuarios;
@@ -67,7 +66,6 @@ public class ServicioIncidencia {
      * Método para API REST y futura Security.
      * Recupera usuario por email (incluido admin hardcodeado).
      */
-    @Transactional(readOnly = true)
     public Optional<Usuario> obtenerUsuario(@NotBlank String email) {
         if (email.equals(admin.email())) {
             return Optional.of(admin);
@@ -76,7 +74,6 @@ public class ServicioIncidencia {
         return repositorioUsuarios.buscar(email);
     }
 
-    @Transactional(readOnly = true)
     public Incidencia buscarIncidencia(int id) {
         return repositorioIncidencias.buscarPorId(id)
                 .orElseThrow(IncidenciaNoExiste::new);
@@ -121,7 +118,6 @@ public class ServicioIncidencia {
         incidencia.estado(estadoNuevo);
     }
 
-    @Transactional(readOnly = true)
     public List<Incidencia> buscarIncidenciasTipoEstado(TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia) {
         if (tipoIncidencia != null && estadoIncidencia != null) {
             return repositorioIncidencias.buscarPorTipoYEstado(tipoIncidencia, estadoIncidencia);
@@ -135,7 +131,6 @@ public class ServicioIncidencia {
         return repositorioIncidencias.buscarTodas();
     }
 
-    @Transactional(readOnly = true)
     public List<Incidencia> obtenerListaIncidenciasUsuario(@NotNull Usuario usuario) {
         return repositorioIncidencias.buscarPorEmailUsuario(usuario.email());
     }
@@ -160,12 +155,10 @@ public class ServicioIncidencia {
         repositorioTipoIncidencia.borrar(tipo);
     }
 
-    @Transactional(readOnly = true)
     public List<TipoIncidencia> obtenerTiposIncidencia() {
         return repositorioTipoIncidencia.buscarTodos();
     }
 
-    @Transactional(readOnly = true)
     public Optional<TipoIncidencia> obtenerTipoIncidencia(String nombreTipo) {
         return repositorioTipoIncidencia.buscarPorNombre(nombreTipo);
     }
