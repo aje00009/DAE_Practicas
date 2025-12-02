@@ -65,3 +65,5 @@
 - Creación y adaptación de ``ControladorIncidencias``, siendo este un controlador REST que recibirá peticiones para interactuar con el back-end (Alberto Jiménez Expósito y Carlos Mayor Navarro)
 - Modificación de ``ServicioIncidencia`` para adaptarlo a la creación del API REST (Alberto Jiménez Expósito y Carlos Mayor Navarro)
 - Modificación ``ServicioIncidencia`` para eliminar la propiedad transactional de la clase (María Ximena Galdames Fernandes)
+- Creación de ``TestControladorIncidencias`` para probar la aplicación con llamadas API Rest (María Ximena Galdames Fernandes)
+- Creación de test de los métodos de creación y obtención de usuarios (María Ximena Galdames Fernandes)
