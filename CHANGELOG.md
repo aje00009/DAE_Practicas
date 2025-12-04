@@ -67,3 +67,4 @@
 - Modificación ``ServicioIncidencia`` para eliminar la propiedad transactional de la clase (María Ximena Galdames Fernandes)
 - Creación de ``TestControladorIncidencias`` para probar la aplicación con llamadas API Rest (María Ximena Galdames Fernandes)
 - Creación de test de los métodos de creación y obtención de usuarios (María Ximena Galdames Fernandes)
+- Modificación de los tests ``TestServicioIncidencia`` y ``TestUsuario`` para comporbar funcionamiento de test API Rest (María Ximena Galdames Fernandes)
