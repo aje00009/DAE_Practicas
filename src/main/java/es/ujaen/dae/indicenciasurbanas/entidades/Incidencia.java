@@ -58,7 +58,7 @@ public class Incidencia {
     private byte[] imagen;
 
     @Version
-    private int version;
+    private int version; // Permite el bloqueo optimista
 
     public Incidencia(LocalDateTime fecha, TipoIncidencia tipo, String descripcion, String localizacion,
                       float latitud, float longitud,  String dpto,  Usuario usuario, byte[] imagen) {

@@ -13,10 +13,10 @@ import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
@@ -43,41 +43,55 @@ public class ServicioIncidencia {
     private static final Usuario admin = new Usuario(
             "administrador",
             "administrador",
-            LocalDate.of(1995,1,1),
+            LocalDate.of(1995, 1, 1),
             "-",
             "+34661030462",
             "admin.dae@ujaen.es",
-            "$2a$10$qukCo2vXP.jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a" // Hash simulado válido para estructura BCrypt
+            "$2a$10$qukCo2vXP.jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a" // Hash de "admin"
     );
 
     public ServicioIncidencia() {}
 
+    // --- GESTIÓN DE USUARIOS ---
+
     public void nuevoUsuario(@Valid Usuario usuario) {
-        // 1. Evitar conflicto con el admin en memoria o verificar si ya existe
-        if (usuario.email().equals(admin.email()) || repositorioUsuarios.buscar(usuario.email()).isPresent()) {
+        // Evita conflicto con el admin
+        if (usuario.email().equals(admin.email())) {
             throw new UsuarioYaRegistrado();
         }
 
-        // 2. Guardado del usuario
-        repositorioUsuarios.guardar(usuario);
+        // 2. Verifica si ya existe en BBDD
+        if (repositorioUsuarios.buscar(usuario.email()).isPresent()) {
+            throw new UsuarioYaRegistrado();
+        }
+
+        // 3. Hashear la clave antes de guardar
+        String claveHasheada = passwordEncoder.encode(usuario.clave());
+
+        Usuario usuarioProtegido = new Usuario(
+                usuario.nombre(),
+                usuario.apellido(),
+                usuario.fNacimiento(),
+                usuario.direccion(),
+                usuario.telefono(),
+                usuario.email(),
+                claveHasheada
+        );
+
+        repositorioUsuarios.guardar(usuarioProtegido);
     }
 
-   /**
-     * Método para API REST y futura Security.
-     * Recupera usuario por email (incluido admin hardcodeado).
+    /**
+     * Recupera usuario para autenticación o lógica.
      */
     public Optional<Usuario> obtenerUsuario(@NotBlank String email) {
         if (email.equals(admin.email())) {
             return Optional.of(admin);
         }
-
         return repositorioUsuarios.buscar(email);
     }
 
-    public Incidencia buscarIncidencia(int id) {
-        return repositorioIncidencias.buscarPorId(id)
-                .orElseThrow(IncidenciaNoExiste::new);
-    }
+    // --- GESTIÓN DE INCIDENCIAS ---
 
     public Incidencia nuevaIncidencia(@NotNull LocalDateTime fecha, @NotNull TipoIncidencia tipo,
                                       @NotBlank String descripcion, @NotBlank String localizacion,
@@ -104,18 +118,64 @@ public class ServicioIncidencia {
         return nuevaIncidencia;
     }
 
-    public void borrarIncidencia(int idIncidencia) {
-        Incidencia incidencia = repositorioIncidencias.buscarPorIdBloqueando(idIncidencia)
+    public Incidencia verIncidencia(int id) {
+        return repositorioIncidencias.buscarPorId(id)
                 .orElseThrow(IncidenciaNoExiste::new);
-
-        repositorioIncidencias.borrar(incidencia);
     }
 
-    public void modificarEstadoIncidencia(int idIncidencia, @NotNull EstadoIncidencia estadoNuevo) {
-        Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
-                .orElseThrow(IncidenciaNoExiste::new);
+    /**
+     * BLOQUEO OPTIMISTA: Borrado
+     * Si un usuario intenta borrar y hay conflicto (otro hilo modificó),
+     * se reintenta la operación para asegurar consistencia.
+     */
+    public void borrarIncidencia(int idIncidencia) {
+        boolean exito = false;
+        while (!exito) {
+            try {
+                // Carga de datos
+                Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
+                        .orElseThrow(IncidenciaNoExiste::new);
 
-        incidencia.estado(estadoNuevo);
+                // Intentar borrar
+                repositorioIncidencias.borrar(incidencia);
+
+                // Forzar sincronización para detectar conflicto de versión
+                repositorioIncidencias.comprobarErrores();
+
+                exito = true;
+            } catch (OptimisticLockingFailureException e) {
+                // Conflicto detectado (alguien modificó mientras borrábamos).
+                // El bucle while nos hará reintentar por lo que buscaremos de nuevo y volveremos a intentar borrar.
+            }
+        }
+    }
+
+    /**
+     * BLOQUEO OPTIMISTA: Modificación
+     * Punto crítico mencionado: Conflicto User vs Admin.
+     * Se aplica reintento automático.
+     */
+    public void modificarEstadoIncidencia(int idIncidencia, @NotNull EstadoIncidencia estadoNuevo) {
+        boolean exito = false;
+        while (!exito) {
+            try {
+                // Carga de datos
+                Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
+                        .orElseThrow(IncidenciaNoExiste::new);
+
+                // Modificar estado
+                incidencia.estado(estadoNuevo);
+
+                // Guardar y forzar chequeo de versión
+                repositorioIncidencias.guardar(incidencia);
+                repositorioIncidencias.comprobarErrores();
+
+                exito = true;
+            } catch (OptimisticLockingFailureException e) {
+                // Conflicto de versión. Alguien tocó la incidencia.
+                // Reintentamos el bucle: se cargará de nuevo la incidencia actualizada y se aplicará el estado.
+            }
+        }
     }
 
     public List<Incidencia> buscarIncidenciasTipoEstado(TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia) {

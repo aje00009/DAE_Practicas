@@ -14,27 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
+
 import java.util.List;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/incidencias")
 public class ControladorIncidencias {
+
     @Autowired
     ServicioIncidencia servicioIncidencia;
 
     @Autowired
     Mapeador mapeador;
 
-    // --- Gestión de Errores (Mapeo de Excepciones a HTTP) ---
+    // --- Gestión de Errores ---
 
     @ExceptionHandler(UsuarioYaRegistrado.class)
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -60,7 +54,11 @@ public class ControladorIncidencias {
     @ResponseStatus(HttpStatus.CONFLICT)
     public void handlerTipoIncidenciaEnUso() {}
 
+    @ExceptionHandler(UsuarioNoExiste.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public void handlerUsuarioNoRegistrado() {}
 
+    // --- Endpoints Usuarios ---
 
     @PostMapping("/usuarios")
     public ResponseEntity<Void> nuevoUsuario(@RequestBody DUsuario dUsuario) {
@@ -76,24 +74,37 @@ public class ControladorIncidencias {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // --- Endpoints Incidencias ---
+
     @PostMapping
-    public ResponseEntity<DIncidencia> crearIncidencia(@RequestBody DIncidencia dIncidencia) {
+    public ResponseEntity<DIncidencia> crearIncidencia(@RequestBody DIncidencia dIncidencia, Principal principal) {
+        String emailAutenticado = principal.getName();
+
+        Usuario autor = servicioIncidencia.obtenerUsuario(emailAutenticado)
+                .orElseThrow(UsuarioNoExiste::new);
+
         Incidencia nueva = mapeador.entidad(dIncidencia);
 
+        // Creamos la incidencia forzando al autor autenticado
         Incidencia creada = servicioIncidencia.nuevaIncidencia(
-                nueva.fecha(), nueva.tipo(), nueva.descripcion(), nueva.localizacion(),
-                nueva.coordenadas().latitud(), nueva.coordenadas().longitud(),
-                nueva.dpto(), nueva.usuario(), null
+                nueva.fecha(),
+                nueva.tipo(),
+                nueva.descripcion(),
+                nueva.localizacion(),
+                nueva.coordenadas().latitud(),
+                nueva.coordenadas().longitud(),
+                nueva.dpto(),
+                autor,
+                null
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(mapeador.dto(creada));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<DIncidencia> obtenerIncidencia(@PathVariable int id) {
-        Incidencia incidencia = servicioIncidencia.buscarIncidencia(id);
+        Incidencia incidencia = servicioIncidencia.verIncidencia(id);
         return ResponseEntity.ok(mapeador.dto(incidencia));
     }
-
 
     @GetMapping
     public ResponseEntity<List<DIncidencia>> buscarIncidencias(
@@ -116,6 +127,15 @@ public class ControladorIncidencias {
         return ResponseEntity.ok().build();
     }
 
+    // Endpoint para modificar estado (Necesario para probar conflicto Admin vs User)
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> modificarEstadoIncidencia(@PathVariable int id, @RequestBody EstadoIncidencia estado) {
+        servicioIncidencia.modificarEstadoIncidencia(id, estado);
+        return ResponseEntity.ok().build();
+    }
+
+    // --- Endpoints Tipos de Incidencia ---
 
     @GetMapping("/tipos")
     public ResponseEntity<List<DTipoIncidencia>> listarTipos() {
@@ -129,12 +149,9 @@ public class ControladorIncidencias {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-
-
     @DeleteMapping("/tipos/{nombre}")
     public ResponseEntity<Void> borrarTipo(@PathVariable String nombre) {
         servicioIncidencia.borrarTipoIncidencia(nombre);
         return ResponseEntity.ok().build();
     }
 }
-
