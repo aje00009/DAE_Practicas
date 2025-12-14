@@ -77,3 +77,5 @@
 - Creación de clase ``ControladorToken`` como endpoint para obtener el JWT (Alberto Jiménez Expósito)
 - Modificación de la entidad ``Incidencia`` y `ServicioIncidencia` para usar el bloqueo optimista (`version`) en el sistema a la hora de borrar/modificar estado incidencia (Carlos Mayor Navarro)
 - Modificación del ``ControladorIncidencias`` para adaptar los cambios de la concurrencia en `ServicioIncidencia` (Alberto Jiménez Expósito)
+- Corrección de ``TestServicioIncidencias`` (María Ximena Galdames Fernandes)
+- Completar ``TestControladorIncidencias`` (María Ximena Galdames Fernandes)
