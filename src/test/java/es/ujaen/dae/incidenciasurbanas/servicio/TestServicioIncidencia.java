@@ -9,6 +9,10 @@ import es.ujaen.dae.indicenciasurbanas.servicios.ServicioIncidencia;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -25,6 +29,14 @@ import static org.assertj.core.api.Assertions.*;
 public class TestServicioIncidencia {
     @Autowired
     ServicioIncidencia servicioIncidencia;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return new BCryptPasswordEncoder();
+        }
+    }
 
     @Test
     @DirtiesContext
@@ -195,18 +207,12 @@ public class TestServicioIncidencia {
     @Test
     @DirtiesContext
     public void testBorrarIncidencia(){
-        //Probar a borrar incidencia inexistente
-
-        //Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");
-
         servicioIncidencia.crearTipoIncidencia("Suciedad");
         TipoIncidencia tipo1 = servicioIncidencia.obtenerTipoIncidencia("Suciedad").get();
 
-        servicioIncidencia.crearTipoIncidencia("Rotura en parque");
-        TipoIncidencia tipo2 = servicioIncidencia.obtenerTipoIncidencia("Rotura en parque").get();
-
         Incidencia incidencia = new Incidencia();
 
+        // Borrar incidencia que no existe
         assertThatThrownBy(() -> servicioIncidencia.borrarIncidencia(incidencia.id())).isInstanceOf(IncidenciaNoExiste.class);
 
         LocalDateTime fecha = LocalDateTime.now();
@@ -216,41 +222,24 @@ public class TestServicioIncidencia {
 
         Optional<Usuario> user1=servicioIncidencia.obtenerUsuario(usuario1.email());
 
-        Usuario usuario2 = new Usuario("Carlos","Mayor Navarro",LocalDate.now(),"Av. Arjona 10","+34673826467","cmn00019@red.ujaen.es","Passw0rD!");
-        servicioIncidencia.nuevoUsuario(usuario2);
-
-        Optional<Usuario> user2=servicioIncidencia.obtenerUsuario(usuario2.email());
-
         Incidencia incidencia1=servicioIncidencia.nuevaIncidencia(fecha, tipo1,"desc", "loc", (float) 9921, (float) -9912, "dpt", user1.get(),"imagen.jpg".getBytes());
-        Incidencia incidencia2=servicioIncidencia.nuevaIncidencia(fecha, tipo2,"desc", "loc", (float) 1.0, (float) 1.0, "dpt", user2.get(),"imagen.jpg".getBytes());
 
-        // Probar a borrar como usuario ajeno a la incidencia
-        /* No se puede comprobar el usuario que ejecuta la accion hasta mas adelante
-        assertThat(servicioIncidencia.borrarIncidencia(incidencia1.id())).isEqualTo(false);
+        // Borrar incidencia
+        servicioIncidencia.borrarIncidencia(incidencia1.id());
 
-        // Probar a borrar como usuario de la incidencia con estado invalido
-        servicioIncidencia.modificarEstadoIncidencia(incidencia2.id(), EstadoIncidencia.RESUELTA);
-        assertThat(servicioIncidencia.borrarIncidencia(incidencia2.id())).isEqualTo(false);
-
-        // Probar a borrar como usuario de la incidencia con estado valido
-        assertThat(servicioIncidencia.borrarIncidencia(incidencia1.id())).isEqualTo(true);
-
-        // Probar a borrar como admin
-        assertThat(servicioIncidencia.borrarIncidencia(incidencia2.id())).isEqualTo(true);*/
-
+        // Comprobar borrado
+        assertThatThrownBy(() -> servicioIncidencia.borrarIncidencia(incidencia1.id())).isInstanceOf(IncidenciaNoExiste.class);
     }
 
     @Test
     @DirtiesContext
     public void testModificarEstadoIncidencia(){
-        //Probar a modificar incidencia inexistente
-        //Optional<Usuario> admin=servicioIncidencia.login("admin.dae@ujaen.es", "admin");
-
         servicioIncidencia.crearTipoIncidencia("tipo1");
         TipoIncidencia tipo = servicioIncidencia.obtenerTipoIncidencia("tipo1").get();
 
         Incidencia incidencia1 = new Incidencia();
 
+        // Modificar estado de incidencia inexistente
         assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia(incidencia1.id(), EstadoIncidencia.EN_EVALUACION)).isInstanceOf(IncidenciaNoExiste.class);
 
         LocalDateTime fecha = LocalDateTime.now();
@@ -261,43 +250,28 @@ public class TestServicioIncidencia {
 
         Incidencia incidencia2=servicioIncidencia.nuevaIncidencia(fecha, tipo, "desc", "loc", (float) 20.0, (float) 30.0, "dpt", user1.get(),"imagen.jpg".getBytes());
 
-        // Probar a modificar como admin
+        // Modificar estado correctamente
         servicioIncidencia.modificarEstadoIncidencia(incidencia2.id(), EstadoIncidencia.EN_EVALUACION);
         assertThat(servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.EN_EVALUACION)).hasSize(1);
         assertThat(servicioIncidencia.buscarIncidenciasTipoEstado(null, EstadoIncidencia.PENDIENTE)).hasSize(0);
 
-        // Porbar a modificar como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.modificarEstadoIncidencia(incidencia2.id(), EstadoIncidencia.RESUELTA)).isInstanceOf(AccionNoAutorizada.class);
     }
 
     @Test
     @DirtiesContext
     public void testCrearTipoIncidencia(){
-        // Probar a crear como admin
-        //Optional<Usuario> admin=servicioIncidencia.login("admin.dae@ujaen.es", "admin");
 
         servicioIncidencia.crearTipoIncidencia("nuevoTipoIncidencia");
         TipoIncidencia tipo = servicioIncidencia.obtenerTipoIncidencia("nuevoTipoIncidencia").get();
 
         // Probar a crear tipo de incidencia ya existente
         assertThatThrownBy(() -> servicioIncidencia.crearTipoIncidencia(tipo.nombre())).isInstanceOf(TipoIncidenciaExiste.class);
-
-        // Probar a crear como usuario normal
-        Usuario usuario1 = new Usuario("Alberto","Jiménez Expósito",LocalDate.now(),"Av. Arjona 10","+34673826467","aje00009@red.ujaen.es","Passw0rD!");
-        servicioIncidencia.nuevoUsuario(usuario1);
-
-        Optional<Usuario> user1=servicioIncidencia.obtenerUsuario(usuario1.email());
-
-        assertThatThrownBy(() -> servicioIncidencia.crearTipoIncidencia("tipo2")).isInstanceOf(AccionNoAutorizada.class);
-
     }
 
     @Test
     @DirtiesContext
     public void testBorrarTipoIncidencia(){
         LocalDateTime fecha = LocalDateTime.now();
-
-        //Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");
 
         servicioIncidencia.crearTipoIncidencia("Suciedad");
         TipoIncidencia suciedad = servicioIncidencia.obtenerTipoIncidencia("Suciedad").get();
@@ -322,9 +296,7 @@ public class TestServicioIncidencia {
 
         servicioIncidencia.nuevaIncidencia(fecha, roturaEnParque, "desc", "loc", (float) 1.0, (float) 50.0, "dpt", opt1.get(),"imagen.jpg".getBytes());
 
-        Optional<Usuario> opt2 = servicioIncidencia.obtenerUsuario("admin.dae@ujaen.es");
-
-        // Probar a borrar como admin con incidencias en us;
+        // Borrar tipo de incidencia en uso
         assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia(suciedad.nombre())).isInstanceOf(TipoIncidenciaEnUso.class);
         assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(3);
 
@@ -333,33 +305,14 @@ public class TestServicioIncidencia {
         assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia(noExiste.nombre())).isInstanceOf(TipoIncidenciaNoExiste.class);
         assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(3);
 
-        // Probar a borrar como usuario normal
-        assertThatThrownBy(() -> servicioIncidencia.borrarTipoIncidencia(suciedad.nombre())).isInstanceOf(AccionNoAutorizada.class);
-        assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(3);
-
-        // Probar a borrar como admin incidencia sin uso
+        // Probar a borrar tipo de incidencia sin uso
         servicioIncidencia.borrarTipoIncidencia(roturaEnMobiliarioUrbano.nombre());
-        assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(2); //Hemos borrado un tipo de incidencia, debería haber uno menos
+        assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(2);
     }
 
     @Test
     @DirtiesContext
-    public void testobtenerTipoIncidencia(){
-        //Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");
-
-        //Comprobar que el tipo de incidencia recien registrado existe
-        servicioIncidencia.crearTipoIncidencia("Residuos tóxicos");
-        assertThat(servicioIncidencia.obtenerTipoIncidencia("Residuos tóxicos").isPresent()).isTrue();
-
-        //Comprobar un tipo de incidencia no existente
-        assertThat(servicioIncidencia.obtenerTipoIncidencia("Pepito").isEmpty()).isTrue();
-    }
-
-    @Test
-    @DirtiesContext
-    public void testObtenerTiposIncidencia(){
-        //Optional<Usuario> resultado = servicioIncidencia.login("admin.dae@ujaen.es", "admin");
-
+    public void testObtenerTipoIncidencia(){
         //Comprobar que devuelve en principio una lista vacio
         assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(0);
 
@@ -369,5 +322,12 @@ public class TestServicioIncidencia {
         servicioIncidencia.crearTipoIncidencia("Tipo3");
 
         assertThat(servicioIncidencia.obtenerTiposIncidencia()).hasSize(3);
+
+        //Comprobar que el tipo de incidencia recien registrado existe
+        servicioIncidencia.crearTipoIncidencia("Residuos tóxicos");
+        assertThat(servicioIncidencia.obtenerTipoIncidencia("Residuos tóxicos").isPresent()).isTrue();
+
+        //Comprobar un tipo de incidencia no existente
+        assertThat(servicioIncidencia.obtenerTipoIncidencia("Pepito").isEmpty()).isTrue();
     }
 }

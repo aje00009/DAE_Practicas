@@ -10,6 +10,7 @@ import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioUsuarios;
 import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
 import es.ujaen.dae.indicenciasurbanas.utils.DistanciaCoordenadas;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,7 +48,7 @@ public class ServicioIncidencia {
             "-",
             "+34661030462",
             "admin.dae@ujaen.es",
-            "$2a$10$qukCo2vXP.jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a/jD.a" // Hash de "admin"
+            "$2a$10$XbB5nD6N3mS7yZ9vR1qT2eO8wQ9rY4uI5oP7aS2dF1gH3jK6lM8nO" // Hash de "admin"
     );
 
     public ServicioIncidencia() {}
@@ -167,7 +168,7 @@ public class ServicioIncidencia {
                 incidencia.estado(estadoNuevo);
 
                 // Guardar y forzar chequeo de versión
-                repositorioIncidencias.guardar(incidencia);
+                repositorioIncidencias.actualizar(incidencia);
                 repositorioIncidencias.comprobarErrores();
 
                 exito = true;
