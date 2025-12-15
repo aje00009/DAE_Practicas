@@ -16,7 +16,6 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -33,7 +32,7 @@ public class TestControladorIncidencias {
 
     @PostConstruct
     void crearRestTemplateBuilder(){
-        var restTemplateBuilder = new RestTemplateBuilder().rootUri("http://localhost:" + localPort + "/incidencias");
+        var restTemplateBuilder = new RestTemplateBuilder().rootUri("http://localhost:" + localPort ); //+ "/incidencias");
 
         restTemplate = new TestRestTemplate(restTemplateBuilder);
     }
@@ -54,7 +53,7 @@ public class TestControladorIncidencias {
 
         // Registro
         ResponseEntity<Void> respuestaRegistro = restTemplate.postForEntity(
-                "/usuarios",
+                "/incidencias/usuarios",
                 usuario,
                 Void.class
         );
@@ -62,7 +61,7 @@ public class TestControladorIncidencias {
 
         // Login con credenciales incorrectas
         ResponseEntity<String> loginFallido = restTemplate.postForEntity(
-                "/autenticacion",
+                "/incidencias/autenticacion",
                 new DAutenticacionUsuario("pepe@test.com", "clave_mal"),
                 String.class
         );
@@ -70,7 +69,7 @@ public class TestControladorIncidencias {
 
         // Login correcto
         ResponseEntity<String> loginExito = restTemplate.postForEntity(
-                "/autenticacion",
+                "/incidencias/autenticacion",
                 new DAutenticacionUsuario("pepe@test.com", "secreto"),
                 String.class
         );
@@ -82,7 +81,7 @@ public class TestControladorIncidencias {
 
         // Acceder perfil usando el Token
         var peticionPerfil = RequestEntity
-                .get("/usuarios/{email}", "pepe@test.com")
+                .get("/incidencias/usuarios/{email}", "pepe@test.com")
                 .headers(headerAutorizacion(token))
                 .build();
 
@@ -96,8 +95,8 @@ public class TestControladorIncidencias {
     public void testCicloCompletoConSeguridad() {
         // Login admin
         ResponseEntity<String> loginAdmin = restTemplate.postForEntity(
-                "/autenticacion",
-                new DAutenticacionUsuario("admin.dae@ujaen.es", "admin"), //COMPROBAR CLAVE
+                "/incidencias/autenticacion",
+                new DAutenticacionUsuario("admin.dae@ujaen.es", "admin"),
                 String.class
         );
         assertThat(loginAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -107,7 +106,7 @@ public class TestControladorIncidencias {
         var nuevoTipo = new DTipoIncidencia("Farola Rota");
 
         var peticionCrearTipo = RequestEntity
-                .post("/tipos")
+                .post("/incidencias/tipos")
                 .headers(headerAutorizacion(tokenAdmin))
                 .body(nuevoTipo);
 
@@ -116,11 +115,11 @@ public class TestControladorIncidencias {
 
         // Creación usuario
         var usuario = new DUsuario("Ana", "García", LocalDate.now(), "Dir", "+34600000000", "ana@test.com", "pass123");
-        restTemplate.postForEntity("/usuarios", usuario, Void.class);
+        restTemplate.postForEntity("/incidencias/usuarios", usuario, Void.class);
 
         // Login usuario
         ResponseEntity<String> loginUser = restTemplate.postForEntity(
-                "/autenticacion",
+                "/incidencias/autenticacion",
                 new DAutenticacionUsuario("ana@test.com", "pass123"),
                 String.class
         );
@@ -138,7 +137,7 @@ public class TestControladorIncidencias {
         );
 
         var peticionIncidencia = RequestEntity
-                .post("/")
+                .post("/incidencias")
                 .headers(headerAutorizacion(tokenUser)) // Token de Ana
                 .body(nuevaIncidencia);
 
@@ -154,7 +153,7 @@ public class TestControladorIncidencias {
     public void testBorradoSinPermisos() {
         // Intentar borrar sin token
         RequestEntity<Void> peticionBorrarSinToken = RequestEntity
-                .delete("/{id}", 1)
+                .delete("/incidencias/{id}", 1)
                 .build();
 
         var respuestaSinToken = restTemplate.exchange(peticionBorrarSinToken, Void.class);
@@ -164,7 +163,7 @@ public class TestControladorIncidencias {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testBusquedaPublica() {
-        ResponseEntity<DIncidencia[]> respuesta = restTemplate.getForEntity("/", DIncidencia[].class); //COMPROBAR PERMISOS
+        ResponseEntity<DIncidencia[]> respuesta = restTemplate.getForEntity("/incidencias", DIncidencia[].class);
         assertThat(respuesta.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }

@@ -36,6 +36,8 @@ public class ServicioSeguridad {
                         .requestMatchers(HttpMethod.POST, "/incidencias/usuarios").permitAll() // REGISTRO
                         .requestMatchers(HttpMethod.GET, "/incidencias").permitAll() // LISTAR
 
+                        .requestMatchers("/error").permitAll()
+
                         // Endpoints Admin (Crear/Borrar Tipos)
                         .requestMatchers("/incidencias/tipos/**").hasRole("ADMIN")
 

@@ -48,10 +48,29 @@ public class ServicioIncidencia {
             "-",
             "+34661030462",
             "admin.dae@ujaen.es",
-            "$2a$10$XbB5nD6N3mS7yZ9vR1qT2eO8wQ9rY4uI5oP7aS2dF1gH3jK6lM8nO" // Hash de "admin"
+            "admin" //"$2a$10$4SyZeSeixqm9nuAlXBr2O.hFfdyGmDBJtj./i.r96FNa7eQ24DMYW" Hash de "admin"
     );
 
     public ServicioIncidencia() {}
+
+    @PostConstruct
+    public void inicializarAdmin(){
+        if(repositorioUsuarios.buscar(admin.email()).isEmpty()){
+
+            String claveHasheada = passwordEncoder.encode(admin.clave());
+            Usuario adminHash = new Usuario(
+                    admin.nombre(),
+                    admin.apellido(),
+                    admin.fNacimiento(),
+                    admin.direccion(),
+                    admin.telefono(),
+                    admin.email(),
+                    claveHasheada
+            );
+
+            repositorioUsuarios.guardar(adminHash);
+        }
+    }
 
     // --- GESTIÓN DE USUARIOS ---
 
