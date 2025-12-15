@@ -1,6 +1,22 @@
-  spring.datasource.url: jdbc:mysql://localhost:3306/incidencias
-  spring.datasource.username: incidencias_usr
-  spring.datasource.password: secret
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/incidencias
+    username: incidencias_usr
+    password: secret
+  jpa:
+    properties:
+      jakarta:
+        persistence:
+          schema-generation:
+            database:
+              action: update
 
-  spring.jpa.properties.jakarta.persistence.schema-generation.database.action: none
 
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
+    key-alias: 1

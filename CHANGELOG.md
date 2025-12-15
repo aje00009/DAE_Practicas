@@ -79,3 +79,4 @@
 - Modificación del ``ControladorIncidencias`` para adaptar los cambios de la concurrencia en `ServicioIncidencia` (Alberto Jiménez Expósito)
 - Corrección de ``TestServicioIncidencias`` (María Ximena Galdames Fernandes)
 - Completar ``TestControladorIncidencias`` (María Ximena Galdames Fernandes)
+- Modificación de las clases necesarias para la implementación de la Ampliación 2 (HTTPS, protección CORS y certificado SSL en API  )
