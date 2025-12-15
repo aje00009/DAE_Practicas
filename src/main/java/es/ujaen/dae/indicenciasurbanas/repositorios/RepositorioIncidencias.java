@@ -132,4 +132,9 @@ public class RepositorioIncidencias {
     public void borrar(Incidencia incidencia) {
         em.remove(em.merge(incidencia));
     }
+
+
+    public void comprobarErrores() {
+        em.flush();
+    }
 }

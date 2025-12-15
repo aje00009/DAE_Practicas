@@ -30,7 +30,7 @@ public class TestUsuario {
     @DirtiesContext
     public void testClave(){
         //Intentar cambiar la clave como administrador y comprobar que se cambia correctamente
-        Usuario admin = servicioIncidencia.login("admin.dae@ujaen.es", "admin").get();
+        Usuario admin = servicioIncidencia.obtenerUsuario("admin.dae@ujaen.es").get();
 
         admin.clave("nUevAClav3_");
 
@@ -39,7 +39,7 @@ public class TestUsuario {
         Usuario user = new Usuario("Alberto","Jiménez Expósito", LocalDate.now(),"Av. Arjona 10","+34673826467","aje00009@red.ujaen.es","Passw0rD!");
         servicioIncidencia.nuevoUsuario(user);
 
-        Usuario user_loged = servicioIncidencia.login(user.email(),user.clave()).get();
+        Usuario user_loged = servicioIncidencia.obtenerUsuario(user.email()).get();
         assertThatThrownBy(() -> user_loged.clave("nUevAClav3_")).isInstanceOf(AccionNoAutorizada.class);
 
     }

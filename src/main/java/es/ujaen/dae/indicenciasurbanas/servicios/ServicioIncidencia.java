@@ -1,69 +1,132 @@
 package es.ujaen.dae.indicenciasurbanas.servicios;
 
+import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
 import es.ujaen.dae.indicenciasurbanas.entidades.TipoIncidencia;
+import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
+import es.ujaen.dae.indicenciasurbanas.excepciones.*;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioIncidencias;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioTipoIncidencia;
 import es.ujaen.dae.indicenciasurbanas.repositorios.RepositorioUsuarios;
 import es.ujaen.dae.indicenciasurbanas.utils.CoordenadasGps;
 import es.ujaen.dae.indicenciasurbanas.utils.DistanciaCoordenadas;
 import es.ujaen.dae.indicenciasurbanas.utils.EstadoIncidencia;
-import es.ujaen.dae.indicenciasurbanas.entidades.Incidencia;
-import es.ujaen.dae.indicenciasurbanas.entidades.Usuario;
-import es.ujaen.dae.indicenciasurbanas.excepciones.*;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Validated
-@Transactional
 public class ServicioIncidencia {
     @Autowired
     private RepositorioUsuarios repositorioUsuarios;
+
     @Autowired
     private RepositorioIncidencias repositorioIncidencias;
 
     @Autowired
     private RepositorioTipoIncidencia repositorioTipoIncidencia;
 
-    private final Usuario admin = new Usuario("administrador","administrador",
-            LocalDate.of(1995,1,1),"-","+34661030462","admin.dae@ujaen.es","admin");
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    public ServicioIncidencia() { }
+    // --- USUARIO ADMINISTRADOR ---
+    private static final Usuario admin = new Usuario(
+            "administrador",
+            "administrador",
+            LocalDate.of(1995, 1, 1),
+            "-",
+            "+34661030462",
+            "admin.dae@ujaen.es",
+            "admin" //"$2a$10$4SyZeSeixqm9nuAlXBr2O.hFfdyGmDBJtj./i.r96FNa7eQ24DMYW" Hash de "admin"
+    );
+
+    public ServicioIncidencia() {}
+
+    @PostConstruct
+    public void inicializarAdmin(){
+        if(repositorioUsuarios.buscar(admin.email()).isEmpty()){
+
+            String claveHasheada = passwordEncoder.encode(admin.clave());
+            Usuario adminHash = new Usuario(
+                    admin.nombre(),
+                    admin.apellido(),
+                    admin.fNacimiento(),
+                    admin.direccion(),
+                    admin.telefono(),
+                    admin.email(),
+                    claveHasheada
+            );
+
+            repositorioUsuarios.guardar(adminHash);
+        }
+    }
+
+    // --- GESTIÓN DE USUARIOS ---
+
+    public void nuevoUsuario(@Valid Usuario usuario) {
+        // Evita conflicto con el admin
+        if (usuario.email().equals(admin.email())) {
+            throw new UsuarioYaRegistrado();
+        }
+
+        // 2. Verifica si ya existe en BBDD
+        if (repositorioUsuarios.buscar(usuario.email()).isPresent()) {
+            throw new UsuarioYaRegistrado();
+        }
+
+        // 3. Hashear la clave antes de guardar
+        String claveHasheada = passwordEncoder.encode(usuario.clave());
+
+        Usuario usuarioProtegido = new Usuario(
+                usuario.nombre(),
+                usuario.apellido(),
+                usuario.fNacimiento(),
+                usuario.direccion(),
+                usuario.telefono(),
+                usuario.email(),
+                claveHasheada
+        );
+
+        repositorioUsuarios.guardar(usuarioProtegido);
+    }
 
     /**
-     * Registro de una nueva Incidencia en el sistema
-     * @param fecha fecha de la Incidencia que va a ser registrada
-     * @param tipo tipo de la Incidencia que va se va a registrar
-     * @param descripcion descripción de la Incidencia que se va a registrar
-     * @param localizacion localización de la Incidencia que va a ser registrada
-     * @param latitud coordenadas x del la localización de la incidencia que se va a registrar
-     * @param longitud coordenadas y del la localización de la incidencia que se va a registrar
-     * @param dpto nombre del departamento que se va a asignar a la incidencia
-     * @param user Usuario que ha notificado de la incidencia que se va a registrar
-     * return Devuelve el identificador de la incidencia creada
+     * Recupera usuario para autenticación o lógica.
      */
-    public Incidencia nuevaIncidencia(@NotNull LocalDateTime fecha, @NotNull TipoIncidencia tipo, @NotBlank String descripcion, @NotBlank String localizacion,
-                                 float latitud, float longitud, @NotBlank String dpto, @Valid Usuario user, byte[] foto) {
+    public Optional<Usuario> obtenerUsuario(@NotBlank String email) {
+        if (email.equals(admin.email())) {
+            return Optional.of(admin);
+        }
+        return repositorioUsuarios.buscar(email);
+    }
 
-        CoordenadasGps coordenadasNuevaIncidencia = new CoordenadasGps(latitud,longitud);
+    // --- GESTIÓN DE INCIDENCIAS ---
 
-        List<Incidencia> incidenciasRegistradas;
-        incidenciasRegistradas = repositorioIncidencias.buscarPorEstado(EstadoIncidencia.PENDIENTE);
+    public Incidencia nuevaIncidencia(@NotNull LocalDateTime fecha, @NotNull TipoIncidencia tipo,
+                                      @NotBlank String descripcion, @NotBlank String localizacion,
+                                      float latitud, float longitud, @NotBlank String dpto,
+                                      @Valid Usuario user, byte[] foto) {
+
+        CoordenadasGps coordenadasNuevaIncidencia = new CoordenadasGps(latitud, longitud);
+
+        // Lógica de negocio: Evitar duplicados cercanos (< 10m)
+        List<Incidencia> incidenciasRegistradas = repositorioIncidencias.buscarPorEstado(EstadoIncidencia.PENDIENTE);
         incidenciasRegistradas.addAll(repositorioIncidencias.buscarPorEstado(EstadoIncidencia.EN_EVALUACION));
 
         for (Incidencia incidencia : incidenciasRegistradas) {
             double distancia = DistanciaCoordenadas.calcularDistanciaMetros(coordenadasNuevaIncidencia, incidencia.coordenadas());
-            if(distancia<10){
+            if (distancia < 10) {
                 throw new IncidenciaEnCurso();
             }
         }
@@ -71,62 +134,71 @@ public class ServicioIncidencia {
         Incidencia nuevaIncidencia = new Incidencia(fecha, tipo,
                 descripcion, localizacion, latitud, longitud, dpto, user, foto);
 
-        // Guardamos la entidad con el repositorio
         repositorioIncidencias.guardar(nuevaIncidencia);
-
-        // Devolvemos la nueva incidencia (o null si no ha podido ser creada al estar repetida)
         return nuevaIncidencia;
     }
 
-    /**
-     * Registro de un nuevo usuario en el sistema
-     * @param usuario El objeto usuario a ser añadido al sistema
-     * @throws UsuarioYaRegistrado En caso de que el Usuario a registrar ya esté en el sistema o se intente crear con el mismo email que el admin
-     */
-    public void nuevoUsuario(@Valid Usuario usuario) {
-        if(usuario.email().equals(admin.email())) //Si usuario tiene mismo email que el admin, registro denegado
-            throw new UsuarioYaRegistrado();
-
-        repositorioUsuarios.guardar(usuario); //Persistimos el objeto en la BBDD
+    public Incidencia verIncidencia(int id) {
+        return repositorioIncidencias.buscarPorId(id)
+                .orElseThrow(IncidenciaNoExiste::new);
     }
 
     /**
-     * Login para identificarse como usuario en el sistema
-     * @param email Email de usuario para hacer login
-     * @param clave Contraseña asociada al usuario para hacer login
-     * @return Un objeto Optional encapsulando a un objeto Usuario o vacío si no se ha encontrado al usuario
+     * BLOQUEO OPTIMISTA: Borrado
+     * Si un usuario intenta borrar y hay conflicto (otro hilo modificó),
+     * se reintenta la operación para asegurar consistencia.
      */
-    @Transactional(readOnly = true) // Optimización para consultas
-    public Optional<Usuario> login(@Email String email, @NotBlank String clave){
-        if(email.equals(admin.email()) &&  clave.equals(admin.clave()))
-            return Optional.of(admin);
+    public void borrarIncidencia(int idIncidencia) {
+        boolean exito = false;
+        while (!exito) {
+            try {
+                // Carga de datos
+                Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
+                        .orElseThrow(IncidenciaNoExiste::new);
 
-        // Buscamos al usuario. Esta consulta usará la caché "usuarios".
-        Optional<Usuario> u = repositorioUsuarios.buscar(email);
+                // Intentar borrar
+                repositorioIncidencias.borrar(incidencia);
 
-        // Comprobamos la clave
-        return u.filter(usuario -> usuario.clave().equals(clave));
+                // Forzar sincronización para detectar conflicto de versión
+                repositorioIncidencias.comprobarErrores();
+
+                exito = true;
+            } catch (OptimisticLockingFailureException e) {
+                // Conflicto detectado (alguien modificó mientras borrábamos).
+                // El bucle while nos hará reintentar por lo que buscaremos de nuevo y volveremos a intentar borrar.
+            }
+        }
     }
 
     /**
-     * Obtener una lista de incidencias generadas por un usuario concreto
-     * @param usuario usuario logeado
-     * @return Devuelve una lista con las incidencias generadas por el usuario con el login
+     * BLOQUEO OPTIMISTA: Modificación
+     * Punto crítico mencionado: Conflicto User vs Admin.
+     * Se aplica reintento automático.
      */
-    @Transactional(readOnly = true)
-    public List<Incidencia> obtenerListaIncidenciasUsuario(@NotNull Usuario usuario){
-        return repositorioIncidencias.buscarPorEmailUsuario(usuario.email());
+    public void modificarEstadoIncidencia(int idIncidencia, @NotNull EstadoIncidencia estadoNuevo) {
+        boolean exito = false;
+        while (!exito) {
+            try {
+                // Carga de datos
+                Incidencia incidencia = repositorioIncidencias.buscarPorId(idIncidencia)
+                        .orElseThrow(IncidenciaNoExiste::new);
+
+                // Modificar estado
+                incidencia.estado(estadoNuevo);
+
+                // Guardar y forzar chequeo de versión
+                repositorioIncidencias.actualizar(incidencia);
+                repositorioIncidencias.comprobarErrores();
+
+                exito = true;
+            } catch (OptimisticLockingFailureException e) {
+                // Conflicto de versión. Alguien tocó la incidencia.
+                // Reintentamos el bucle: se cargará de nuevo la incidencia actualizada y se aplicará el estado.
+            }
+        }
     }
 
-    /**
-     * Obtener las incidencias con un tipo de incidencia y/o estado de incidencia concreto
-     * @param tipoIncidencia valor del tipo de incidencia deseado, puede ser nulo
-     * @param estadoIncidencia valor del estado de incidencia deseado, puede ser nulo
-     * @return Devuelve una lista con las incidencias que tienen los valores deseados
-     */
-    public List<Incidencia> buscarIncidenciasTipoEstado(TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia){
-
-
+    public List<Incidencia> buscarIncidenciasTipoEstado(TipoIncidencia tipoIncidencia, EstadoIncidencia estadoIncidencia) {
         if (tipoIncidencia != null && estadoIncidencia != null) {
             return repositorioIncidencias.buscarPorTipoYEstado(tipoIncidencia, estadoIncidencia);
         }
@@ -139,83 +211,23 @@ public class ServicioIncidencia {
         return repositorioIncidencias.buscarTodas();
     }
 
-    /**
-     * Eliminación de una incidencia registrada en el sistema
-     * @param usuario usuario logeado
-     * @param incidenciaBorrar Incidencia que se quiere eliminar
-     */
-    public boolean borrarIncidencia(@NotNull Usuario usuario, @NotNull Incidencia incidenciaBorrar){
-        // 1. Buscamos la incidencia
-        Incidencia incidencia = repositorioIncidencias.buscarPorIdBloqueando(incidenciaBorrar.id())
-                .orElseThrow(IncidenciaNoExiste::new);
-
-        // 2. Comprobamos permisos (lógica original)
-        boolean esAdmin = usuario.equals(admin);
-        boolean esPropietario = incidencia.usuario().email().equals(usuario.email());
-        boolean estaPendiente = (incidencia.estado() == EstadoIncidencia.PENDIENTE);
-
-        // 3. Borramos si cumple
-        if (esAdmin || (esPropietario && estaPendiente)) {
-            repositorioIncidencias.borrar(incidencia);
-            return true;
-        }
-
-        return false;
+    public List<Incidencia> obtenerListaIncidenciasUsuario(@NotNull Usuario usuario) {
+        return repositorioIncidencias.buscarPorEmailUsuario(usuario.email());
     }
 
-    /**
-     * Modificación del estado de una incidencia
-     * @param usuario usuario logeado
-     * @param estadoIncidencia Nuevo estado de la incidencia
-     * @param Incidencia Identificador de la incidencia a modificar
-     */
-    public void modificarEstadoIncidencia(@NotNull Usuario usuario, EstadoIncidencia estadoIncidencia, @NotNull Incidencia Incidencia){
-        // 1. Buscamos la incidencia
-        Incidencia incidencia = repositorioIncidencias.buscarPorId(Incidencia.id())
-                .orElseThrow(IncidenciaNoExiste::new);
+    // --- GESTIÓN DE TIPOS DE INCIDENCIA ---
 
-        if(!usuario.equals(admin)) {
-            throw new AccionNoAutorizada();
-        }
-
-        // 2. Modificamos la entidad en memoria (con el @Transactional ya se modifica en la BBDD al tenerlo linkeado dentro de la transacción)
-        incidencia.estado(estadoIncidencia);
-
-    }
-
-    /**
-     * Crear un nuevo tipo de incidencia
-     * @param usuario usuario logeado
-     * @param tipoIncidencia Tipo de incidencia a añadir
-     */
-    public void crearTipoIncidencia(@NotNull Usuario usuario, @NotBlank String tipoIncidencia){
-        if(!usuario.email().equals(admin.email())){
-            throw new AccionNoAutorizada();
-        }
-
-        // Comprobamos si ya existe
-        if(repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia).isPresent()){
+    public void crearTipoIncidencia(@NotBlank String nombreTipo) {
+        if (repositorioTipoIncidencia.buscarPorNombre(nombreTipo).isPresent()) {
             throw new TipoIncidenciaExiste();
         }
-
-        repositorioTipoIncidencia.guardar(new TipoIncidencia(tipoIncidencia));
+        repositorioTipoIncidencia.guardar(new TipoIncidencia(nombreTipo));
     }
 
-    /**
-     * Borrar un tipo de Incidencia
-     * @param usuario Identificador del usuario
-     * @param tipoIncidencia tipo de Incidencia a borrar
-     */
-    public void borrarTipoIncidencia(@NotNull Usuario usuario, @NotNull TipoIncidencia tipoIncidencia){
-        if(!usuario.equals(admin)) {
-            throw new AccionNoAutorizada();
-        }
-
-
-        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia.nombre())
+    public void borrarTipoIncidencia(@NotBlank String nombreTipo) {
+        TipoIncidencia tipo = repositorioTipoIncidencia.buscarPorNombre(nombreTipo)
                 .orElseThrow(TipoIncidenciaNoExiste::new);
 
-        // Comprobamos si está en uso
         if (!repositorioIncidencias.buscarPorTipo(tipo).isEmpty()) {
             throw new TipoIncidenciaEnUso();
         }
@@ -223,20 +235,11 @@ public class ServicioIncidencia {
         repositorioTipoIncidencia.borrar(tipo);
     }
 
-    /**
-     * Función que devuelve todos los tipos de incidencia registrados en el sistema
-     * @return Devuelve una lista con los tipos de incidencia
-     */
-    public List<TipoIncidencia> obtenerTiposIncidencia(){
+    public List<TipoIncidencia> obtenerTiposIncidencia() {
         return repositorioTipoIncidencia.buscarTodos();
     }
 
-    /**
-     * Función que devuelve un tipo de incidencia según su nombre
-     * @param tipoIncidencia Nombre del tipo de incidencia a devolver
-     * @return Devuelve un Optional encaspsulando el TipoIncidencia (o vacío si no existe)
-     */
-    public Optional<TipoIncidencia> obtenerTipoIncidencia(String tipoIncidencia){
-        return repositorioTipoIncidencia.buscarPorNombre(tipoIncidencia);
+    public Optional<TipoIncidencia> obtenerTipoIncidencia(String nombreTipo) {
+        return repositorioTipoIncidencia.buscarPorNombre(nombreTipo);
     }
 }
